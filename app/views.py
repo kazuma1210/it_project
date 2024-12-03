@@ -12,7 +12,7 @@ def home(request):
 
 
 def self_analysis(request):
-    return render(request, 'self_analysis.html')  # 自己分析開始画面
+    return render(request, 'self_analysis.html')  # app/ は不要
 
 def community_forum(request):
     return render(request, 'community_forum.html')  # コミュニティフォーラム画面
