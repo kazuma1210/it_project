@@ -1,14 +1,7 @@
 
-
 djangorestframework==3.12.4
 
 django==3.0
 
 uvicorn
 
-mysql-connector-python
-<<<<<<< HEAD
-
-pymysql
-=======
->>>>>>> 00aef51b34e9c58cd6697d8f4c2dc9f40ef415f5
