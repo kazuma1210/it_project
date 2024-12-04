@@ -7,7 +7,8 @@ Pythonは3.8.x系列を使用する
 ・mysqlの起動手順
 
 ディレクトリ指定
-cd C:\mysql\bin
+
+
 
 サーバー起動
 mysqld --console
