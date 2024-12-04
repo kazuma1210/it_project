@@ -4,4 +4,3 @@ djangorestframework==3.12.4
 django==3.0
 
 uvicorn
-
