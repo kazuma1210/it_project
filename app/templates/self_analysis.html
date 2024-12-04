@@ -4,36 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>自己分析アンケート</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        .container {
-            width: 50%;
-            margin: 0 auto;
-        }
-        label {
-            display: block;
-            margin: 10px 0 5px;
-        }
-        select, input, button {
-            width: 100%;
-            padding: 8px;
-            margin-bottom: 15px;
-        }
-        button {
-            cursor: pointer;
-        }
-        .error-popup {
-            display: none;
-            border: 1px solid #f00;
-            background-color: #fee;
-            padding: 10px;
-            margin-top: 10px;
-            color: #f00;
-        }
-    </style>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'css/self.analysis.css' %}"> <!-- Djangoで静的ファイルを読み込み -->
 </head>
 <body>
     <div class="container">
@@ -47,7 +19,7 @@
                 <option value="C言語">C言語</option>
             </select>
 
-            <label for="weakness">1. 不得意分野</label>
+            <label for="weakness">2. 不得意分野</label>
             <select id="weakness" name="weakness">
                 <option value="">選択してください</option>
                 <option value="Java">Java</option>
@@ -55,7 +27,7 @@
                 <option value="C言語">C言語</option>
             </select>
 
-            <label for="qualifications">2. 取得済みの資格</label>
+            <label for="qualifications">3. 取得済みの資格</label>
             <select id="qualifications" name="qualifications">
                 <option value="">選択してください</option>
                 <option value="ITパスポート">ITパスポート</option>
@@ -63,7 +35,7 @@
                 <option value="応用情報技術者試験">応用情報技術者試験</option>
             </select>
 
-            <label for="career">3. 現在の職種、目指している職種</label>
+            <label for="career">4. 現在の職種、目指している職種</label>
             <select id="career" name="career">
                 <option value="">選択してください</option>
                 <option value="システムエンジニア">システムエンジニア</option>

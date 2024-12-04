@@ -130,10 +130,10 @@ USE_TZ = True
 # settings.py
 
 STATIC_URL = '/static/'
+
 STATICFILES_DIRS = [
-    BASE_DIR / 'static',  # プロジェクト内のstaticフォルダ
+    BASE_DIR / 'static',  # プロジェクト内のstaticディレクトリ
 ]
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # collectstaticで集められる先
 
 
 
