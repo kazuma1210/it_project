@@ -1,0 +1,43 @@
+前置き
+MySQLは5.6.24を使用する
+Djangoは3.0以降を使用する 
+Pythonは3.8.x系列を使用する
+
+---------------------------------------------
+・mysqlの起動手順
+
+ディレクトリ指定
+cd C:\mysql\bin
+
+サーバー起動
+mysqld --console
+
+ログイン
+mysql -u root -p
+
+----------------------------------------------
+・it_project(djangoプロジェクトファイル)の起動手順
+
+ディレクトリ指定
+cd D:\sotuken
+
+requirements.txtのインストール
+pip install -r requirements.txt
+
+マイグレーション
+python manage.py makemigrations
+python manage.py migrate
+
+サーバー起動(開発用)
+python manage.py runserver
+
+サーバー起動(本番運用)
+uvicorn it_project_name.asgi:application --reload
+
+-----------------------------------------------
+保存先
+
+・Python(VSCでpythonやpipコマンドが認識されない場合、環境変数のPathには以下二つのパスを設定する。パス間に;を付けて一行で指定する)
+C:\Users\<ユーザー名>\AppData\Local\Programs\Python\Python313\Scripts
+C:\Users\<ユーザー名>\AppData\Local\Programs\Python\Python313
+C:mysql\bin
