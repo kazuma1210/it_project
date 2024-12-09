@@ -14,8 +14,11 @@ def home(request):
 def self_analysis(request):
     return render(request, 'self_analysis.html')  # app/ は不要
 
-def community_forum(request):
-    return render(request, 'community_forum.html')  # コミュニティフォーラム画面
+def mypage(request):
+    return render(request, 'mypage.html')  # ユーザー情報画面
 
-def user_info(request):
-    return render(request, 'user_info.html')  # ユーザー情報画面
+def community_thread(request):
+    return render(request, 'community_thread.html')  # communitythread
+
+def result_analysis(request):
+    return render(request, 'result_analysis.html')  # result_analysis
