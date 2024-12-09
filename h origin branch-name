@@ -1,0 +1,90 @@
+[33mcommit 636b8eaacb970854d9c15021ae2e0366b63b94a2[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Fri Dec 6 19:30:54 2024 +0900
+
+    a
+
+[33mcommit 3b7cee9d4f6cc7ddc82de157f9d73b2d53afbc95[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Wed Dec 4 18:19:38 2024 +0900
+
+    fuck off
+
+[33mcommit 494876d184ddddb920184b6687bba2fd1a35ce11[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Wed Dec 4 17:01:55 2024 +0900
+
+    こんにちは
+
+[33mcommit d0c2c7909f17472b606a59a0f8a5b8feaab04400[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Wed Dec 4 16:22:59 2024 +0900
+
+    あ
+
+[33mcommit 7308ab919011e047544fb7626d9a01e053c5b97a[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Wed Dec 4 16:20:20 2024 +0900
+
+    こんにちは
+
+[33mcommit 01519654f50d0dcf0f8a35b1d1b0e0a22b2ab92f[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Wed Dec 4 16:06:42 2024 +0900
+
+    Githubの使い方追加
+
+[33mcommit 321d35144355215c0d6eb5fb517cda55baa14a6d[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Wed Dec 4 16:06:00 2024 +0900
+
+    Githubコマンドの使い方を書いたぞ
+
+[33mcommit e82ae3559f4ad7d67fd9775bca0c1641eb5a5853[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Wed Dec 4 15:43:58 2024 +0900
+
+    こんにちは
+
+[33mcommit 2c1061ee1c8033abd4257a4f8c3689c94d21e55d[m
+Author: kazuma1210 <kazuma200401210@outlook.jp>
+Date:   Tue Dec 3 16:14:31 2024 +0900
+
+    Reflect all changes: add self_analysis.html, update settings, remove old files
+
+[33mcommit 7be942d92dd35ec1c732b058728789b21480d8ff[m
+Author: kazuma1210 <kazuma200401210@outlook.jp>
+Date:   Tue Dec 3 16:13:36 2024 +0900
+
+    Add self_analysis.html template and update settings
+
+[33mcommit 5aa5345f600d3f6d42ef5c57209e103b20ee44ea[m
+Merge: da91b2f 00aef51
+Author: kazuma1210 <kazuma200401210@outlook.jp>
+Date:   Tue Dec 3 15:45:49 2024 +0900
+
+    Resolved merge conflicts
+
+[33mcommit da91b2fa0de07c6c3daf8389d03c2e6a53fb2da9[m
+Author: kazuma1210 <kazuma200401210@outlook.jp>
+Date:   Tue Dec 3 15:39:19 2024 +0900
+
+    変更内容の説明
+
+[33mcommit 00aef51b34e9c58cd6697d8f4c2dc9f40ef415f5[m
+Author: kazuma1210 <kazuma200401210@outlook.jp>
+Date:   Tue Dec 3 15:24:35 2024 +0900
+
+    Upload Django project
+
+[33mcommit 946053704d354c3cf3d18b956b96dbaa6e4976a4[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Tue Dec 3 14:43:23 2024 +0900
+
+    Update .gitignore
+
+[33mcommit f6eb3e1a43248c7a09984118ee891803026a2794[m
+Author: kazuma1210 <kazuma20041210@outlook.jp>
+Date:   Tue Dec 3 13:45:11 2024 +0900
+
+    Initial commit
