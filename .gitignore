@@ -1,21 +1,2 @@
-# Python
-*.pyc
-*.pyo
-*.pyd
-__pycache__/
 
-# Django
-db.sqlite3
-/media
-/static
-
-# VS Code
-.vscode/
-
-# Virtual Environment
-venv/
-.env/
-
-# IDEs
-.idea/
 
