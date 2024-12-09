@@ -6,23 +6,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ホーム</title>
     <link rel="stylesheet" type="text/css" href="{% static 'css/home.css' %}">
-
 </head>
 <body>
     <h1>IT資格診断システム</h1>
+    
+    <!-- ユーザー情報 -->
     <div class="user-info">
         ユーザー名: {{ user.username|default:"ゲスト" }}
     </div>
+    
+    <!-- ボタン -->
     <div class="container">
         <button onclick="location.href='{% url 'self_analysis' %}'">自己分析開始</button>
-        <button onclick="location.href='{% url 'community_forum' %}'" {% if not user.is_authenticated %}disabled{% endif %}>コミュニティフォーラム</button>
-        <button onclick="location.href='{% url 'user_info' %}'" {% if not user.is_authenticated %}disabled{% endif %}>ユーザー情報</button>
+        <button onclick="location.href='{% url 'community_thread' %}'">コミュニティフォーラム</button>
+        
+        <!-- ログインしている場合にユーザー情報ボタンを有効化 -->
+        <button onclick="location.href='{% url 'mypage' %}'" {% if not user.is_authenticated %}disabled{% endif %}>ユーザー情報</button>
     </div>
+    
+    <!-- ログイン/ログアウトボタン -->
     <div class="bottom-buttons">
         {% if user.is_authenticated %}
+            <!-- ログイン済みならログアウトボタンを表示 -->
             <button onclick="location.href='{% url 'logout' %}'">ログアウト</button>
+            
+            <!-- ログイン済みならコミュニティフォーラムとユーザー情報ボタンを表示 -->
+            <a href="{% url 'community_thread' %}">コミュニティフォーラム</a>
+            <a href="{% url 'mypage' %}">ユーザー情報</a>
         {% else %}
-            <a href="{% url 'login' %}">新規登録・ログイン</a>
+            <!-- ログインしていない場合は新規登録・ログインボタンを表示 -->
+            <a href="{% url 'signup' %}">新規登録</a>
+            <a href="{% url 'login' %}">ログイン</a>
         {% endif %}
     </div>
 </body>
