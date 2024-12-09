@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プロフィール編集</title>
+  <style>
+    /* 全体のスタイル */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px; /* 上部の見切れ修正 */
+    }
+
+    .container {
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 1000px;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .container:hover {
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px; /* 上部の間隔を少し調整 */
+    }
+
+    h1 {
+      color: #2c3e50;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px; /* ボタンの高さを少し小さく */
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    button:active {
+      background-color: #2471a3;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .info-item {
+      width: 48%;
+    }
+
+    .info-item label {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .info-item input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: border 0.3s ease;
+    }
+
+    .info-item input:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    .details .section {
+      margin-bottom: 30px;
+    }
+
+    .details label {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #555;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .details input, .details textarea {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: border 0.3s ease;
+    }
+
+    /* プレースホルダーのグレー */
+    .details input::placeholder,
+    .details textarea::placeholder {
+      color: #aaa;
+      font-style: italic;
+    }
+
+    /* 入力後にプレースホルダーを消す */
+    .details input:focus::placeholder,
+    .details textarea:focus::placeholder {
+      color: transparent;
+    }
+
+    .details input:focus, .details textarea:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    /* 自己紹介をinputタグの仕組みに変え、テキストボックスの大きさは調整 */
+    input {
+      height: 50px; /* 高さを統一 */
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: border 0.3s ease;
+    }
+
+    /* 自己紹介入力ボックス */
+    #self-intro {
+      height: 90px; /* 見切れないように高さを調整 */
+      width: 100%;
+      padding-top: 12px; /* 上部の文字を少し下げる */
+      resize: none;
+    }
+
+    /* サイドボーダーとカードの効果 */
+    .card {
+      border: 1px solid #ddd;
+      border-radius: 12px;
+      padding: 25px;
+      background-color: #fafafa;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      margin-bottom: 25px;
+    }
+
+    .card-header {
+      font-size: 20px;
+      font-weight: bold;
+      color: #2c3e50;
+      margin-bottom: 15px;
+    }
+
+    .card-content {
+      font-size: 14px;
+      color: #7f8c8d;
+    }
+
+    /* 任意ラベルをグレーの四角に入れる */
+    .optional-label {
+      background-color: #e0e0e0;
+      padding: 5px 10px;
+      font-size: 14px;
+      color: #555;
+      border-radius: 5px;
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>マイページ - プロフィール編集</h1>
+      <button class="back-btn">戻る</button>
+      <button class="save-btn">保存</button>
+    </div>
+
+    <div class="profile">
+      <div class="profile-info">
+        <div class="info-item">
+          <label for="user-id">ユーザーID</label>
+          <input type="text" id="user-id" value="denshi309" readonly>
+        </div>
+        <div class="info-item">
+          <label for="email">メールアドレス</label>
+          <input type="email" id="email" value="xxxxxxxxx@gmail.com" readonly>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          自己紹介 <span class="optional-label">任意</span>
+        </div>
+        <input type="text" id="self-intro" placeholder="プロフィールに自己紹介を追加する">
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          現在の職種または学科 <span class="optional-label">任意</span>
+        </div>
+        <input type="text" id="current-position" placeholder="例: 情報処理学科">
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          取得資格 <span class="optional-label">任意</span>
+        </div>
+        <input type="text" id="qualifications" placeholder="例: ITパスポート">
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          目標資格 <span class="optional-label">任意</span>
+        </div>
+        <input type="text" id="target-qualifications" placeholder="例: 応用情報技術者">
+      </div>
+    </div>
+  </div>
+</body>
+</html>

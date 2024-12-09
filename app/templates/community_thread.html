@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コミュニティフォーラム</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 基本のスタイル */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #212121; /* ダークグレー */
+            color: #E0E0E0; /* 明るいグレー */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        /* コンテナ */
+        .container {
+            display: flex;
+            width: 85%;
+            height: 90%;
+            background: #2C2C2C;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        /* サイドバー */
+        .sidebar {
+            width: 250px;
+            background: #333333;
+            color: #fff;
+            padding: 30px;
+            border-radius: 20px 0 0 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .sidebar .sidebar-btn-home {
+            padding: 15px;
+            background-color: #FF5722;
+            color: white;
+            font-size: 1.5em;
+            font-weight: 700;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .sidebar .sidebar-btn-home:hover {
+            background-color: #FF3D00; /* ホバー時に色が変化 */
+            transform: scale(1.05);
+        }
+
+        .sidebar .category-title {
+            font-size: 1.5em;
+            font-weight: 700;
+            margin-top: 20px;
+            color: #FF5722;
+        }
+
+        .category-btns {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .sidebar-btn {
+            background: #444444;
+            color: #E0E0E0;
+            padding: 12px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            border: none;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+
+        .sidebar-btn:hover {
+            background-color: #FF5722;
+            transform: translateX(5px);
+        }
+
+        .sidebar-btn i {
+            margin-right: 10px;
+        }
+
+        /* メインコンテンツ */
+        .main-content {
+            flex-grow: 1;
+            padding: 35px;
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+            background-color: #2C2C2C;
+            border-radius: 0 20px 20px 0;
+        }
+
+        /* スレッド投稿フォーム */
+        .thread-post {
+            display: flex;
+            gap: 20px;
+            background: #333333;
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        .thread-post select,
+        .thread-post textarea {
+            font-size: 1.1em;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #FF5722;
+            outline: none;
+            background-color: #424242;
+            color: #fff;
+            transition: all 0.3s ease;
+        }
+
+        .thread-post select {
+            width: 200px;
+        }
+
+        .thread-post textarea {
+            width: 100%;
+            resize: none; /* ユーザーがサイズ変更できないように */
+        }
+
+        .thread-post select:focus,
+        .thread-post textarea:focus {
+            border-color: #FF3D00;
+        }
+
+        .thread-post button {
+            background-color: #FF5722;
+            color: white;
+            font-size: 1.3em;
+            border: none;
+            padding: 12px 25px;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: background-color 0.3s ease, transform 0.3s ease;
+        }
+
+        .thread-post button:hover {
+            background-color: #FF3D00;
+            transform: translateY(-3px);
+        }
+
+        /* スレッドリスト */
+        .post-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* スレッドカード */
+        .thread {
+            display: flex;
+            flex-direction: row; /* 右側に画像を配置するために横並びに変更 */
+            background: #424242;
+            border-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .thread:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        }
+
+        .thread-content {
+            flex-grow: 1; /* コンテンツを左側に配置 */
+        }
+
+        .thread-image {
+            width: 150px; /* 画像の幅 */
+            height: 150px; /* 画像の高さ */
+            background-color: #888; /* 画像がない場合の背景色 */
+            border-radius: 10px;
+            margin-left: 20px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .thread-tags {
+            background-color: #FF5722;
+            color: white;
+            padding: 8px 15px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 25px;
+            width: fit-content;
+            margin-bottom: 15px;
+        }
+
+        .thread-content .user-id {
+            font-size: 1.2em;
+            font-weight: 600;
+            color: #FF5722;
+        }
+
+        .thread-content .thread-message {
+            font-size: 1.1em;
+            color: #E0E0E0;
+            line-height: 1.5;
+            margin-top: 10px;
+        }
+
+        .thread-content .update-time,
+        .thread-content .create-time {
+            font-size: 1em;
+            color: #FF5722;
+            margin-top: 5px;
+        }
+
+        /* レスポンシブデザイン */
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+                height: 100%;
+            }
+
+            .sidebar {
+                width: 100%;
+                border-radius: 20px 20px 0 0;
+            }
+
+            .category-btns {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+
+            .main-content {
+                padding: 20px;
+            }
+
+            .thread {
+                flex-direction: column;
+                align-items: center; /* 中央揃え */
+            }
+
+            .thread-image {
+                width: 100%; /* 画面幅いっぱいに画像を広げる */
+                height: 200px;
+                margin: 10px 0;
+            }
+
+            .thread-tags {
+                width: 100%;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- サイドバー -->
+        <div class="sidebar">
+            <button class="sidebar-btn-home"><i class="fas fa-home"></i>ホーム</button>
+            <div class="category-title">分野一覧</div>
+            <div class="category-btns">
+                <button class="sidebar-btn"><i class="fas fa-cogs"></i>応用</button>
+                <button class="sidebar-btn"><i class="fas fa-book-open"></i>基本</button>
+                <button class="sidebar-btn"><i class="fas fa-code"></i>C言語</button>
+                <button class="sidebar-btn"><i class="fas fa-laptop-code"></i>Java</button>
+                <button class="sidebar-btn"><i class="fas fa-network-wired"></i>ネットワーク</button>
+            </div>
+        </div>
+
+        <!-- メインコンテンツ -->
+        <div class="main-content">
+            <div class="thread-post">
+                <select>
+                    <option value="c_language">C言語</option>
+                    <option value="java">Java</option>
+                    <option value="php">PHP</option>
+                    <option value="network">ネットワーク</option>
+                </select>
+                <textarea placeholder="スレッド内容を入力..." rows="4"></textarea>
+                <button>投稿</button>
+            </div>
+
+            <!-- スレッドリスト -->
+            <div class="post-list">
+                <div class="thread">
+                    <div class="thread-content">
+                        <div class="thread-tags">応用</div>
+                        <div class="user-id">ユーザー1</div>
+                        <div class="thread-message">ITパス楽だった！</div>
+                        <div class="create-time">作成日時: 2024年12月6日 10:00</div>
+                        <div class="update-time">最終更新: 5分前</div>
+                    </div>
+                    <div class="thread-image" style="background-image: url('https://via.placeholder.com/150');"></div>
+                </div>
+                <div class="thread">
+                    <div class="thread-content">
+                        <div class="thread-tags">基本</div>
+                        <div class="user-id">ユーザー2</div>
+                        <div class="thread-message">基本問題簡単だったよ。</div>
+                        <div class="create-time">作成日時: 2024年12月6日 9:30</div>
+                        <div class="update-time">最終更新: 20分前</div>
+                    </div>
+                    <div class="thread-image" style="background-image: url('https://via.placeholder.com/150');"></div>
+                </div>
+                <div class="thread">
+                    <div class="thread-content">
+                        <div class="thread-tags">PHP</div>
+                        <div class="user-id">ユーザー3</div>
+                        <div class="thread-message">PHPでのデータ操作が面白い！</div>
+                        <div class="create-time">作成日時: 2024年12月6日 8:00</div>
+                        <div class="update-time">最終更新: 1時間前</div>
+                    </div>
+                    <div class="thread-image" style="background-image: url('https://via.placeholder.com/150');"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
