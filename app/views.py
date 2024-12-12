@@ -1,14 +1,22 @@
 from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model, login
+from django.contrib.auth import get_user_model, login, logout
 from django.contrib import messages
 from django.core.mail import send_mail
-import random
-import string
 from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth import logout
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
+import random
+import string
+import os
+from django.shortcuts import render, redirect
+from django.contrib.auth import authenticate, login
+from .forms import LoginForm
 
+EMAIL_HOST_PASSWORD = os.getenv('MAILTRAP_PASSWORD', '')
+
+def register(request):
+    return render(request, '1_user/新規登録/register.html')
+ # 適切なテンプレートを返す
 
 
 # ホーム画面
@@ -17,7 +25,7 @@ def home(request):
         'is_authenticated': request.user.is_authenticated,
         'username': request.user.username if request.user.is_authenticated else 'ゲスト',
     }
-    return render(request, 'home.html', context)
+    return render(request, '1_user/ホーム/home.html', context)
 
 
 # メール認証用コードの生成
@@ -32,28 +40,6 @@ def send_verification_email(email, code):
     from_email = 'your_email@example.com'  # 設定したメールアドレス
     send_mail(subject, message, from_email, [email])
 
-
-# ユーザー登録ビュー
-def signup(request):
-    if request.method == 'POST':
-        form = UserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()  # ユーザー登録
-            email = user.email  # 登録したユーザーのメールアドレス
-
-            # メール認証に必要な情報を設定
-            verification_code = generate_verification_code()  # 認証コード生成
-            send_verification_email(email, verification_code)  # メール送信
-
-            # 認証コードをセッションに保存（後で確認）
-            request.session['verification_code'] = verification_code
-
-            # ユーザーに認証コード入力画面にリダイレクト
-            return redirect('verify_email')  # メール認証画面へリダイレクト
-    else:
-        form = UserCreationForm()
-
-    return render(request, 'signup.html', {'form': form})
 
 
 # メール認証画面
@@ -71,9 +57,9 @@ def verify_email(request):
             return redirect('home')  # home.htmlにリダイレクト
         else:
             messages.error(request, '認証コードが間違っています。')
-            return render(request, 'verify_email.html')
+            return render(request, '1_user/新規登録/verify_email.html')
 
-    return render(request, 'verify_email.html')
+    return render(request, '1_user/新規登録/verify_email.html')
 
 
 # ログアウト処理
@@ -111,21 +97,77 @@ def activate(request, uidb64, token):
         return render(request, 'account/activation_invalid.html')  # トークンが無効な場合
 
 
-# 自己分析ページ
+# 各ページビュー
 def self_analysis(request):
-    return render(request, 'self_analysis.html')    
+    return render(request, '1_user/自己分析/self_analysis.html')
 
 
-# 結果分析ページ
 def result_analysis(request):
-    return render(request, 'result_analysis.html')
+    return render(request, '1_user/自己分析/result_analysis.html')
 
 
-# コミュニティフォーラムページ
 def community_thread(request):
-    return render(request, 'community_thread.html')  
+    return render(request, '1_user/コミュフォ/community_thread.html')
 
 
-# マイページビュー
 def mypage(request):
-    return render(request, 'mypage.html')  # mypage.htmlをレンダリング
+    return render(request, '1_user/プロフィール/mypage.html')
+
+
+def signup(request):
+    context = {}
+    return render(request, '1_user/新規登録/signup.html', context)
+
+
+def login(request):
+    if request.method == 'POST':
+        form = LoginForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password']
+            # ユーザーを認証する
+            user = authenticate(request, username=email, password=password)
+            if user is not None:
+                # ユーザーが存在すればログイン
+                login(request, user)
+                return redirect('home')  # ログイン後のリダイレクト先を指定
+            else:
+                # ユーザーが認証されなかった場合のエラーメッセージ
+                form.add_error(None, "メールアドレスまたはパスワードが正しくありません。")
+    else:
+        form = LoginForm()
+    return render(request, '1_user/ログイン_ログアウト/login.html', {'form': form})
+
+def logout_confirm(request):
+    context = {}
+    return render(request, '1_user/ログイン_ログアウト/logout_confirm.html', context)
+
+
+def logout(request):
+    context = {}
+    return render(request, '1_user/ログイン_ログアウト/logout.html', context)
+
+
+def community_thread(request):
+    context = {}
+    return render(request, '1_user/コミュフォ/community_thread.html', context)
+
+
+def admin_dashboard(request):
+    context = {}
+    return render(request, '2_admin/1_ホームログイン/admindashboard.html', context)
+
+
+def admin_login(request):
+    context = {}
+    return render(request, '2_admin/1_ホームログイン/adminlogin.html', context)
+
+
+def user_list(request):
+    context = {}
+    return render(request, '2_admin/ユーザー管理/user_list.html', context)
+
+
+def thread_view(request):
+    context = {}
+    return render(request, '2_admin/コミュフォ/thread_view.html', context)
