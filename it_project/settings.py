@@ -145,37 +145,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # settings.py
 # settings.py
 
-# メール送信のバックエンド設定（SMTPを使用）
+# メール送信の設定
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-
-# GmailのSMTPサーバーを指定
-EMAIL_HOST = 'smtp.gmail.com'
-
-# ポート設定（587はTLSを使用する場合のポート）
-EMAIL_PORT = 587
-
-# TLS（暗号化）を使用する設定
+EMAIL_HOST = 'smtp.mailtrap.io'
+EMAIL_PORT = 2525
+EMAIL_HOST_USER = '15ad0f22a9098e'  # Mailtrapのユーザー名
+EMAIL_HOST_PASSWORD = '74eded4009c27c'  # Mailtrapのパスワード
 EMAIL_USE_TLS = True
-
-# Gmailのメールアドレス（送信元メール）
-EMAIL_HOST_USER = 'craft20041210@gmail.com'  # ここに自分のGmailアドレスを入力
-
-# Gmailアカウントのパスワード（後述のアプリパスワードを使用）
-EMAIL_HOST_PASSWORD = 'kazuma0129'  # ここに自分のアプリパスワードを入力
-
-# デフォルトの送信者メールアドレス
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
-LANGUAGE_CODE = 'ja'  # 日本語に設定
-
-# 使用する言語を日本語に設定します
-LANGUAGES = [
-    ('ja', 'Japanese'),
-    ('en', 'English'),
-]
-
-# 日本語翻訳が含まれているか確認（`django.contrib`の翻訳ファイル）
-LOCALE_PATHS = [
-    BASE_DIR / 'locale',  # ロケールファイルを配置するディレクトリ
-]
-
+DEFAULT_FROM_EMAIL = 'your_email@example.com'  # 送信元メールアドレス
