@@ -3,186 +3,198 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>応用情報技術者試験</title>
+    <title>スレッド閲覧</title>
     <style>
         body {
-            font-family: 'Roboto', sans-serif;
-            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
             margin: 0;
             padding: 0;
-            color: #333;
+            display: flex;
+            flex-direction: row;
         }
 
-        .container {
-            width: 90%;
-            max-width: 960px;
-            margin: 40px auto;
-            background: #ffffff;
-            border-radius: 10px;
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            position: relative;
+        .sidebar {
+            width: 50px;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            border-right: 1px solid #ccc;
         }
 
-        .header {
-            background-color: #4CAF50;
+        .arrow-button {
+            width: 30px;
+            height: 30px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .arrow-button:hover {
+            background-color: #bbb;
+        }
+
+        .main {
+            flex: 1;
             padding: 20px;
-            color: white;
-            font-size: 22px;
-            font-weight: 500;
-            text-align: center;
-            border-radius: 8px;
+            overflow-y: auto;
         }
 
         .thread {
-            padding: 20px;
-            margin-bottom: 15px;
-            border-bottom: 1px solid #f0f0f0;
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
         }
 
-        .thread:last-child {
-            border-bottom: none;
-        }
-
-        .user-info {
-            font-size: 14px;
-            color: #9e9e9e;
+        .header {
+            font-weight: bold;
             margin-bottom: 10px;
         }
 
-        .message-title {
-            font-size: 20px;
-            font-weight: 600;
-            margin-bottom: 12px;
-            color: #333;
-        }
-
-        .message {
-            font-size: 16px;
-            color: #555;
-            line-height: 1.7;
-        }
-
         .comment {
-            padding: 12px;
-            background-color: #f9f9f9;
-            border: 1px solid #f0f0f0;
-            border-radius: 8px;
-            margin-top: 10px;
+            margin-left: 20px;
+            border-left: 2px solid #ddd;
+            padding-left: 10px;
+            margin-bottom: 10px;
         }
 
         .footer {
+            margin-top: 20px;
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 15px 20px;
-            background-color: #ffffff;
-            border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            gap: 10px;
         }
 
-        .footer input[type="text"] {
+        .textbox {
             flex: 1;
-            padding: 12px 18px;
-            font-size: 16px;
+            padding: 10px;
             border: 1px solid #ddd;
-            border-radius: 50px;
-            outline: none;
-            background-color: #f7f7f7;
-            color: #333;
-            transition: background-color 0.3s;
+            border-radius: 5px;
         }
 
-        .footer input[type="text"]:focus {
-            background-color: #fff;
-        }
-
-        .footer button {
-            padding: 12px 25px;
-            background-color: #4CAF50;
-            color: white;
+        .submit-button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
             border: none;
-            border-radius: 50px;
-            font-size: 16px;
+            border-radius: 5px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .footer button:hover {
-            background-color: #388E3C;
+        .submit-button:hover {
+            background-color: #0056b3;
         }
 
         .back-button {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            padding: 10px 25px;
-            background-color: #4CAF50;
-            color: white;
-            font-size: 16px;
+            width: 30px;
+            height: 30px;
+            background-color: #ccc;
             border: none;
-            border-radius: 25px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
             cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
 
         .back-button:hover {
-            background-color: #388E3C;
-        }
-
-        .left-buttons {
-            position: absolute;
-            top: 90px;
-            left: -80px;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .left-buttons button {
-            width: 55px;
-            height: 55px;
-            background-color: #4CAF50;
-            border: none;
-            color: white;
-            font-size: 22px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-
-        .left-buttons button:hover {
-            background-color: #388E3C;
+            background-color: #bbb;
         }
     </style>
 </head>
 <body>
-    <button class="back-button">戻る</button>
-    <div class="container">
-        <div class="header">応用情報技術者試験</div>
+    <div class="sidebar">
+        <button class="back-button" onclick="goBack()">←</button>
+        <button class="arrow-button" onclick="scrollToTop()">↑</button>
+        <button class="arrow-button" onclick="scrollToBottom()">↓</button>
+    </div>
+
+    <div class="main">
         <div class="thread">
-            <div class="user-info">ユーザID xxxx/xx/xx</div>
-            <div class="message-title">R5秋むずかったね〜</div>
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">R5秋むずかったね〜</div>
+            <div class="footer">xx時間前</div>
         </div>
+
         <div class="thread">
-            <div class="user-info">ユーザID xxxx/xx/xx</div>
-            <div class="message">今回の応用情報どうだったー？</div>
-            <div class="comment">
-                <div class="user-info">ユーザID xxxx/xx/xx</div>
-                <div>簡単だった〜</div>
-            </div>
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">今回の応用情報どうだった？</div>
+            <div class="footer">xx日前</div>
         </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">プログラムの部分が特に難しかった</div>
+            <div class="footer">1日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">来年の目標はセキュスペ合格！</div>
+            <div class="footer">2日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">午後問題で時間足りなかった...</div>
+            <div class="footer">3日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">過去問が役に立った！</div>
+            <div class="footer">5日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">初受験で緊張した</div>
+            <div class="footer">6日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">午前の知識問題が意外とできた！</div>
+            <div class="footer">7日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">午後問題の問1が鬼畜だった</div>
+            <div class="footer">8日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">次回の試験に向けて勉強中</div>
+            <div class="footer">9日前</div>
+        </div>
+
         <div class="footer">
-            <input type="text" placeholder="コメントを追加">
-            <button>投稿</button>
-        </div>
-        <div class="left-buttons">
-            <button>▲</button>
-            <button>▼</button>
+            <textarea class="textbox" placeholder="コメントを追加"></textarea>
+            <button class="submit-button">投稿</button>
         </div>
     </div>
+
+    <script>
+        function scrollToTop() {
+            document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToBottom() {
+            document.querySelector('.main').scrollTo({ top: document.querySelector('.main').scrollHeight, behavior: 'smooth' });
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
 </body>
 </html>

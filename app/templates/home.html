@@ -9,35 +9,47 @@
 </head>
 <body>
     <h1>IT資格診断システム</h1>
+<!-- ユーザー情報 -->
+<div class="user-info">
+    ユーザー名: {{ user.username|default:"ゲスト" }}
+</div>
+
+<!-- ボタン -->
+<div class="container">
+    <button onclick="location.href='{% url 'self_analysis' %}'">自己分析開始</button>
+    {% if user.is_authenticated %}
+    <button onclick="location.href='{% url 'community_thread' %}'" class="active">コミュニティフォーラム</button>
+    {% else %}
+    <button onclick="return false;" class="inactive">コミュニティフォーラム</button>
+    {% endif %}
     
-    <!-- ユーザー情報 -->
-    <div class="user-info">
-        ユーザー名: {{ user.username|default:"ゲスト" }}
-    </div>
-    
-    <!-- ボタン -->
-    <div class="container">
-        <button onclick="location.href='{% url 'self_analysis' %}'">自己分析開始</button>
-        <button onclick="location.href='{% url 'community_thread' %}'">コミュニティフォーラム</button>
+    <!-- ログインしている場合にユーザー情報ボタンを有効化 -->
+    <button onclick="location.href='{% url 'mypage' %}'" {% if not user.is_authenticated %}disabled{% endif %}>ユーザー情報</button>
+</div>
+
+<!-- ログイン/ログアウトボタン -->
+<div class="bottom-buttons">
+    {% if user.is_authenticated %}
+        <!-- ログイン済みならログアウトボタンを表示 -->
+        <button onclick="location.href='{% url 'logout' %}'">ログアウト</button>
         
-        <!-- ログインしている場合にユーザー情報ボタンを有効化 -->
-        <button onclick="location.href='{% url 'mypage' %}'" {% if not user.is_authenticated %}disabled{% endif %}>ユーザー情報</button>
-    </div>
-    
-    <!-- ログイン/ログアウトボタン -->
-    <div class="bottom-buttons">
-        {% if user.is_authenticated %}
-            <!-- ログイン済みならログアウトボタンを表示 -->
-            <button onclick="location.href='{% url 'logout' %}'">ログアウト</button>
-            
-            <!-- ログイン済みならコミュニティフォーラムとユーザー情報ボタンを表示 -->
-            <a href="{% url 'community_thread' %}">コミュニティフォーラム</a>
-            <a href="{% url 'mypage' %}">ユーザー情報</a>
-        {% else %}
-            <!-- ログインしていない場合は新規登録・ログインボタンを表示 -->
-            <a href="{% url 'signup' %}">新規登録</a>
-            <a href="{% url 'login' %}">ログイン</a>
-        {% endif %}
-    </div>
+        <!-- ログイン済みならコミュニティフォーラムとユーザー情報ボタンを表示 -->
+        <a href="{% url 'community_thread' %}">コミュニティフォーラム</a>
+        <a href="{% url 'mypage' %}">ユーザー情報</a>
+    {% else %}
+        <!-- ログインしていない場合は新規登録・ログインボタンを表示 -->
+        <a href="{% url 'signup' %}">新規登録</a>
+        <a href="{% url 'login' %}">ログイン</a>
+    {% endif %}
+</div>
+
+<style>
+    /* コミュニティフォーラムボタンの非アクティブ状態のスタイル */
+    .inactive {
+        background-color: #d1d1d1;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+</style>
 </body>
 </html>

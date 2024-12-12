@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ログイン</title>
+    <style>
+        /* 全体のリセット */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: white;
+            padding: 40px 50px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 450px;
+        }
+
+        h2 {
+            text-align: center;
+            font-size: 24px;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"], input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            color: #333;
+            background-color: #fafafa;
+        }
+
+        input[type="text"]:focus, input[type="password"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 30px;
+                max-width: 100%;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            input[type="text"], input[type="password"], button {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h2>管理者ログイン</h2>
+        <form id="adminLoginForm" onsubmit="return validateAdminLogin()">
+            <label for="adminId">管理者ID</label>
+            <input type="text" id="adminId" name="adminId" placeholder="管理者IDを入力" required>
+            
+            <label for="adminPassword">パスワード</label>
+            <input type="password" id="adminPassword" name="adminPassword" placeholder="パスワードを入力" required>
+            
+            <button type="submit" id="loginBtn">ログイン</button>
+        </form>
+    </div>
+
+    <script>
+        function validateAdminLogin() {
+            var adminId = document.getElementById("adminId").value;
+            var adminPassword = document.getElementById("adminPassword").value;
+            
+            // IDとパスワードの簡易チェック
+            if (!adminId.match(/^[a-zA-Z0-9]{4,20}$/)) {
+                alert("有効な管理者IDを入力してください（英数字4〜20文字）");
+                return false;
+            }
+            
+            if (adminPassword.length < 8 || adminPassword.length > 16) {
+                alert("パスワードは8〜16文字で入力してください");
+                return false;
+            }
+
+            // ログイン成功後、ダッシュボード画面に遷移
+            alert("ログイン成功！管理者ダッシュボードへ遷移します。");
+            window.location.href = "admindashboard.html";// 次画面へ遷移
+            return false; // 実際の送信を防ぐため、開発時はこれをコメントアウト
+        }
+    </script>
+
+</body>
+</html>

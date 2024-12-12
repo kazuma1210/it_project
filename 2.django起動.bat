@@ -1,6 +1,6 @@
 @echo off
 REM 作業ディレクトリ（D:\sotuken\it_project）に移動
-cd /d D:\sotuken\it_project
+cd /d E:\sotuken\it_project
 
 REM 必要なパッケージのインストール
 echo Installing dependencies from requirements.txt...
