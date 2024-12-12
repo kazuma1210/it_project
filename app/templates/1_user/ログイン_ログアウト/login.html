@@ -4,137 +4,159 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ログイン</title>
-
     <style>
-        /* ページ全体のスタイル */
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fa;
+        /* 全体のリセット */
+        * {
             margin: 0;
             padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f2f5;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
         }
 
-        /* ホームへボタンのスタイル */
-        .home-btn {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            text-decoration: none;
-            font-size: 14px;
-            cursor: pointer;
-        }
-
-        .home-btn:hover {
-            background-color: #0056b3;
-        }
-
-        /* ログインコンテナ */
-        .login-container {
-            background-color: #fff;
-            padding: 40px;
+        .container {
+            background-color: white;
+            padding: 40px 50px;
             border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 400px;
-            text-align: center;
+            max-width: 450px;
         }
 
-        /* タイトル */
-        h1 {
+        h2 {
+            text-align: center;
             font-size: 24px;
             margin-bottom: 30px;
             color: #333;
         }
 
-        /* フォームグループ */
-        .form-group {
-            margin-bottom: 20px;
-            text-align: left;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
+        label {
+            font-size: 14px;
             color: #555;
+            margin-bottom: 5px;
+            display: block;
         }
 
-        .form-group input {
+        input[type="text"], input[type="password"] {
             width: 100%;
-            padding: 10px;
-            border: 1px solid #ddd;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
             border-radius: 4px;
-            font-size: 16px;
-            box-sizing: border-box;
+            font-size: 14px;
+            color: #333;
+            background-color: #fafafa;
         }
 
-        .form-group input:focus {
-            border-color: #007bff;
+        input[type="text"]:focus, input[type="password"]:focus {
             outline: none;
+            border-color: #4CAF50;
         }
 
-        /* ログインボタン */
-        .submit-btn {
-            background-color: #007bff;
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #4CAF50;
             color: white;
             border: none;
-            padding: 10px 20px;
             border-radius: 4px;
-            cursor: pointer;
-            width: 100%;
             font-size: 16px;
+            cursor: pointer;
         }
 
-        .submit-btn:hover {
-            background-color: #0056b3;
+        button:hover {
+            background-color: #45a049;
         }
 
-        /* 新規登録リンク */
-        p {
-            margin-top: 20px;
+        .form-footer {
+            text-align: center;
+            margin-top: 15px;
         }
 
-        p a {
+        .form-footer button, .form-footer a {
+            font-size: 14px;
             color: #007bff;
+            background: none;
+            border: none;
+            cursor: pointer;
             text-decoration: none;
         }
 
-        p a:hover {
+        .form-footer a:hover {
             text-decoration: underline;
         }
+
+        @media screen and (max-width: 768px) {
+            .container {
+                padding: 30px;
+                max-width: 100%;
+            }
+
+            h2 {
+                font-size: 20px;
+            }
+
+            input[type="text"], input[type="password"], button {
+                font-size: 14px;
+                padding: 10px;
+            }
+        }
+
     </style>
 </head>
 <body>
-    <a href="{% url 'home' %}" class="home-btn">ホームへ</a>
 
-    <div class="login-container">
-        <h1>ログイン</h1>
-
-        <form method="POST" class="login-form">
-            {% csrf_token %}
-            <div class="form-group">
-                {{ form.email.label_tag }}
-                {{ form.email }}
-            </div>
-            <div class="form-group">
-                {{ form.password.label_tag }}
-                {{ form.password }}
-            </div>
-            <div class="form-actions">
-                <button type="submit" class="submit-btn">ログイン</button>
-            </div>
+    <div class="container">
+        <h2>ログイン</h2>
+        <form id="loginForm" onsubmit="return validateForm()">
+            <label for="email">メールアドレス</label>
+            <input type="text" id="email" name="email" placeholder="メールアドレスを入力" required>
+            
+            <label for="password">パスワード</label>
+            <input type="password" id="password" name="password" placeholder="パスワードを入力" required>
+            
+            <button type="submit" id="loginBtn">ログイン</button>
         </form>
 
-        <p>アカウントをお持ちでないですか？ <a href="{% url 'register' %}">新規登録</a></p>
+        <div class="form-footer">
+            <a href="lost.html">パスワードを忘れた</a>
+            <button onclick="goBack()">戻る</button>
+        </div>
     </div>
+
+    <script>
+        function validateForm() {
+            var email = document.getElementById("email").value;
+            var password = document.getElementById("password").value;
+            
+            var emailPattern = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+            if (!email.match(emailPattern)) {
+                alert("有効なメールアドレスを入力してください");
+                return false;
+            }
+            
+            if (password.length < 8 || password.length > 16) {
+                alert("パスワードは8〜16文字で入力してください");
+                return false;
+            }
+
+            // ログイン処理をここに追加 (サーバー側で認証など)
+            alert("ログイン成功！ホーム画面へ遷移します。");
+            window.location.href = "home.html"; // 次画面へ遷移
+            return false; // 実際の送信を防ぐため、開発時はこれをコメントアウト
+        }
+
+        function goBack() {
+            window.location.href = "newlogin.html"; // 新規登録画面へ遷移
+        }
+    </script>
+
 </body>
 </html>
