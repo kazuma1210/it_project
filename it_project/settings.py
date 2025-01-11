@@ -1,12 +1,12 @@
 import pymysql
 from pathlib import Path
+import os
 
 # MySQLdb を使用するための設定
 pymysql.install_as_MySQLdb()
 
 # プロジェクトの基本ディレクトリ
 BASE_DIR = Path(__file__).resolve().parent.parent
-
 
 # セキュリティ警告: 本番環境ではSECRET_KEYを隠して管理する
 SECRET_KEY = 'django-insecure-_ebj55x)g$g0051_z%%%k!9!dk$q38xv8fy6!9iw$)@v6l3(rg'
@@ -33,13 +33,13 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+
 ]
 
 ROOT_URLCONF = 'it_project.urls'
 
 # テンプレート設定
-
-import os
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
@@ -70,6 +70,10 @@ DATABASES = {
         'PASSWORD': '',
         'HOST': 'localhost',
         'PORT': '3306',
+        'OPTIONS': {
+            'charset': 'utf8mb4',
+            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'"
+        },
     }
 }
 
@@ -87,16 +91,19 @@ AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
     },
-]
+]  # リストを閉じ忘れを修正
 
 # 言語とタイムゾーンの設定
-LANGUAGE_CODE = 'en-us'
-TIME_ZONE = 'UTC'
+LANGUAGE_CODE = 'ja'
+TIME_ZONE = 'Asia/Tokyo'
 USE_I18N = True
 USE_TZ = True
 
 # 静的ファイルのURL設定
 STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),
+]
 
 # デフォルトのプライマリキー設定
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -109,3 +116,8 @@ EMAIL_HOST_USER = '15ad0f22a9098e'
 EMAIL_HOST_PASSWORD = '74eded4009c27c'
 EMAIL_USE_TLS = True
 DEFAULT_FROM_EMAIL = 'your_email@example.com'
+
+AUTH_USER_MODEL = 'app.CustomUser'
+AUTH_USER_MODEL = 'auth.User'
+
+DEFAULT_INDEX_LENGTH = 191

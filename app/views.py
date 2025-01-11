@@ -1,23 +1,35 @@
-from django.shortcuts import render, redirect
-from django.contrib.auth import get_user_model, login, logout
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
-from django.core.mail import send_mail
-from django.contrib.auth.forms import UserCreationForm
-from django.contrib.auth.tokens import default_token_generator
-from django.utils.http import urlsafe_base64_decode, urlsafe_base64_encode
-import random
-import string
-import os
-from django.shortcuts import render, redirect
-from django.contrib.auth import authenticate, login
-from .forms import LoginForm
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth import get_user_model
+from .models import Profile, Thread, Comment
+from .forms import CustomUserCreationForm, CommentForm
+from django.http import HttpResponse
+from django.urls import reverse
+from django.shortcuts import get_object_or_404, render
+from django.shortcuts import render, get_object_or_404
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Thread
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Thread
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import Comment
+from .models import Thread, Comment
+User = get_user_model()  # カスタムユーザーモデルを使用
 
-EMAIL_HOST_PASSWORD = os.getenv('MAILTRAP_PASSWORD', '')
-
-def register(request):
-    return render(request, '1_user/新規登録/register.html')
- # 適切なテンプレートを返す
-
+# パスワードをリセットする例
+def reset_password_example():
+    try:
+        user = User.objects.get(email='craft20041210@gmail.com')
+        user.set_password('kazuma0129')  # パスワードを設定
+        user.save()
+        print("パスワードが正しくリセットされました。")
+    except User.DoesNotExist:
+        print("指定されたユーザーは存在しません。")
 
 # ホーム画面
 def home(request):
@@ -27,147 +39,219 @@ def home(request):
     }
     return render(request, '1_user/ホーム/home.html', context)
 
-
-# メール認証用コードの生成
-def generate_verification_code():
-    return ''.join(random.choices(string.ascii_letters + string.digits, k=6))
-
-
-# メール送信関数（認証コード）
-def send_verification_email(email, code):
-    subject = 'アカウントの認証コード'
-    message = f'以下の認証コードを入力してください:\n\n{code}'
-    from_email = 'your_email@example.com'  # 設定したメールアドレス
-    send_mail(subject, message, from_email, [email])
-
-
-
-# メール認証画面
-def verify_email(request):
+# 新規登録処理
+def register(request):
     if request.method == 'POST':
-        entered_code = request.POST.get('code')
-        session_code = request.session.get('verification_code')
-
-        if entered_code == session_code:
-            # コードが一致した場合、ユーザーをアクティブにする
-            user = request.user
-            user.is_active = True  # ユーザーをアクティブにする
-            user.save()
-            messages.success(request, 'アカウントが有効化されました！')
-            return redirect('home')  # home.htmlにリダイレクト
+        form = CustomUserCreationForm(request.POST)
+        if form.is_valid():
+            form.save()  # 新規登録したユーザーをデータベースに保存
+            messages.success(request, 'アカウントが作成されました！ログインしてください。')
+            return redirect('login')  # ログインページへリダイレクト
         else:
-            messages.error(request, '認証コードが間違っています。')
-            return render(request, '1_user/新規登録/verify_email.html')
+            messages.error(request, '入力内容に誤りがあります。もう一度お試しください。')
+    else:
+        form = CustomUserCreationForm()
 
-    return render(request, '1_user/新規登録/verify_email.html')
+    return render(request, '1_user/新規登録/register.html', {'form': form})
 
+# ログイン処理
+def login_view(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        if email:
+            try:
+                user_obj = User.objects.get(email=email)
+                user = authenticate(request, username=user_obj.username, password=password)
+                if user is not None:
+                    login(request, user)
+                    messages.success(request, 'ログインに成功しました！')
+                    return redirect('home')
+                else:
+                    messages.error(request, 'メールアドレスまたはパスワードが正しくありません。')
+            except User.DoesNotExist:
+                messages.error(request, 'このメールアドレスは登録されていません。')
+        else:
+            messages.error(request, 'メールアドレスを入力してください。')
+    return render(request, '1_user/ログイン_ログアウト/login.html')
 
 # ログアウト処理
 def user_logout(request):
-    logout(request)  # ユーザーをログアウト
-    return redirect('home')  # ログアウト後、ホームページへリダイレクト
+    logout(request)
+    messages.success(request, 'ログアウトしました。')
+    return redirect('home')
 
+# マイページ（プロフィールの保存）
+@login_required
+def mypage(request):
+    profile, created = Profile.objects.get_or_create(user=request.user)
 
-# アカウント有効化（トークンによる）
-def send_activation_email(user):
-    token = default_token_generator.make_token(user)  # トークン生成
-    uid = urlsafe_base64_encode(str(user.pk).encode())  # ユーザーIDエンコード
-    activation_link = f'http://yourdomain.com/activate/{uid}/{token}/'  # URLリンク生成
+    if request.method == 'POST':
+        profile.self_intro = request.POST.get('self_intro', '')
+        profile.current_position = request.POST.get('current_position', '')
+        profile.qualifications = request.POST.get('qualifications', '')
+        profile.target_qualifications = request.POST.get('target_qualifications', '')
+        profile.save()
+        messages.success(request, 'プロフィールが保存されました！')
+        return redirect('mypage')
 
-    subject = 'アカウントの有効化'
-    body = f'以下のリンクをクリックしてアカウントを有効化してください。\n\n{activation_link}'
+    return render(request, '1_user/プロフィール/mypage.html', {'profile': profile})
 
-    send_mail(subject, body, 'from_email@example.com', [user.email])  # メール送信
-
-
-# アカウント有効化用のビュー（トークン検証）
-def activate(request, uidb64, token):
-    try:
-        uid = urlsafe_base64_decode(uidb64).decode()  # ユーザーIDをデコード
-        user = get_user_model().objects.get(pk=uid)  # ユーザーを取得
-    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-        user = None  # ユーザーが見つからなかった場合
-
-    if user is not None and default_token_generator.check_token(user, token):
-        user.is_active = True  # ユーザーを有効化
-        user.save()
-        login(request, user)  # ユーザーをログインさせる
-        return redirect('home')  # 任意のリダイレクト先（ホームページなど）
-    else:
-        return render(request, 'account/activation_invalid.html')  # トークンが無効な場合
-
-
-# 各ページビュー
+# 自己分析画面
 def self_analysis(request):
     return render(request, '1_user/自己分析/self_analysis.html')
 
-
+# 分析結果画面
 def result_analysis(request):
     return render(request, '1_user/自己分析/result_analysis.html')
 
-
+# コミュニティスレッド一覧表示
+@login_required
 def community_thread(request):
+    threads = Thread.objects.all().prefetch_related('comments').order_by('-updated_at')
+    return render(request, '1_user/コミュフォ/community_thread.html', {'threads': threads})
+
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from .models import Thread, Comment
+from django.urls import reverse
+
+# スレッド作成処理
+def create_thread(request):
+    if request.method == 'POST':
+        category_key = request.POST.get('category')  # 英語のキーを取得
+        content = request.POST.get('content')
+
+        # カテゴリと内容が必須
+        if not category_key or not content:
+            return render(request, '1_user/コミュフォ/community_thread.html', {'error': 'カテゴリと内容は必須です'})
+
+        # スレッドを作成
+        thread = Thread.objects.create(
+            category=dict(Thread.CATEGORY_CHOICES).get(category_key, category_key),  # 日本語に変換
+            created_by=request.user
+        )
+
+        # スレッドの初コメントを作成
+        Comment.objects.create(
+            category=dict(Thread.CATEGORY_CHOICES).get(category_key, category_key),  # 日本語に変換
+            content=content,
+            thread=thread,
+            author=request.user
+        )
+
+        # スレッド詳細ページにリダイレクト
+        return redirect(reverse('comment', kwargs={'thread_id': thread.id}))
+
     return render(request, '1_user/コミュフォ/community_thread.html')
 
 
-def mypage(request):
-    return render(request, '1_user/プロフィール/mypage.html')
+# スレッド詳細（コメント一覧表示）
+@login_required
 
 
-def signup(request):
-    context = {}
-    return render(request, '1_user/新規登録/signup.html', context)
 
 
-def login(request):
+
+
+
+
+def comment(request, thread_id):
+    thread = get_object_or_404(Thread, id=thread_id)
+
+    # CATEGORY_CHOICESから日本語ラベルを取得
+    category_display = dict(Thread.CATEGORY_CHOICES).get(thread.category, thread.category)
+
+    comments = thread.comments.all().order_by('created_at')
+    first_comment = comments.first() if comments.exists() else None
+    other_comments = comments[1:] if comments.count() > 1 else []
+
+    return render(request, '1_user/コミュフォ/comment.html', {
+        'thread': thread,
+        'category_display': category_display,  # 日本語ラベルを渡す
+        'first_comment': first_comment,
+        'comments': other_comments
+    })
+
+
+
+# コメント投稿
+@login_required
+def post_comment(request, thread_id):
     if request.method == 'POST':
-        form = LoginForm(request.POST)
-        if form.is_valid():
-            email = form.cleaned_data['email']
-            password = form.cleaned_data['password']
-            # ユーザーを認証する
-            user = authenticate(request, username=email, password=password)
-            if user is not None:
-                # ユーザーが存在すればログイン
-                login(request, user)
-                return redirect('home')  # ログイン後のリダイレクト先を指定
-            else:
-                # ユーザーが認証されなかった場合のエラーメッセージ
-                form.add_error(None, "メールアドレスまたはパスワードが正しくありません。")
-    else:
-        form = LoginForm()
-    return render(request, '1_user/ログイン_ログアウト/login.html', {'form': form})
+        thread = get_object_or_404(Thread, id=thread_id)
+        content = request.POST.get('comment')
 
-def logout_confirm(request):
-    context = {}
-    return render(request, '1_user/ログイン_ログアウト/logout_confirm.html', context)
+        if content:
+            Comment.objects.create(
+                thread=thread,
+                author=request.user,
+                content=content,
+            )
+        else:
+            messages.error(request, 'コメント内容を入力してください。')
 
+        return redirect('comment', thread_id=thread.id)
 
-def logout(request):
-    context = {}
-    return render(request, '1_user/ログイン_ログアウト/logout.html', context)
-
-
-def community_thread(request):
-    context = {}
-    return render(request, '1_user/コミュフォ/community_thread.html', context)
-
-
+# 管理者用ダッシュボード
+@login_required
 def admin_dashboard(request):
-    context = {}
-    return render(request, '2_admin/1_ホームログイン/admindashboard.html', context)
+    return render(request, '2_admin/1_ホームログイン/admindashboard.html')
 
-
+# 管理者ログイン
 def admin_login(request):
-    context = {}
-    return render(request, '2_admin/1_ホームログイン/adminlogin.html', context)
+    return render(request, '2_admin/1_ホームログイン/adminlogin.html')
 
-
+# ユーザーリスト管理
+@login_required
 def user_list(request):
-    context = {}
-    return render(request, '2_admin/ユーザー管理/user_list.html', context)
+    return render(request, '2_admin/ユーザー管理/user_list.html')
 
-
+# スレッドの詳細画面（管理者用）
+@login_required
 def thread_view(request):
-    context = {}
-    return render(request, '2_admin/コミュフォ/thread_view.html', context)
+    return render(request, '2_admin/コミュフォ/thread_view.html')
+
+# プロフィール保存処理（個別関数）
+@login_required
+def save_profile(request):
+    if request.method == 'POST':
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        profile.self_intro = request.POST.get('self_intro', '')
+        profile.current_position = request.POST.get('current_position', '')
+        profile.qualifications = request.POST.get('qualifications', '')
+        profile.target_qualifications = request.POST.get('target_qualifications', '')
+        profile.save()
+        messages.success(request, 'プロフィールが保存されました。')
+    return redirect('mypage')
+
+
+@csrf_exempt
+
+
+@csrf_exempt
+def report_thread(request, thread_id):
+    if request.method == 'POST':
+        try:
+            thread = Thread.objects.get(id=thread_id)
+            thread.report_count += 1
+            thread.save()
+            return JsonResponse({'success': True, 'message': 'スレッドが報告されました。'})
+        except Thread.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'スレッドが見つかりませんでした。'}, status=404)
+    return JsonResponse({'success': False, 'error': '無効なリクエストです。'}, status=400)
+
+from .models import Comment
+
+@csrf_exempt
+def report_comment(request, comment_id):
+    if request.method == 'POST':
+        try:
+            comment = Comment.objects.get(id=comment_id)
+            comment.is_reported = True
+            comment.save()
+            return JsonResponse({'success': True, 'message': 'コメントが報告されました。'})
+        except Comment.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'コメントが見つかりませんでした。'}, status=404)
+    return JsonResponse({'success': False, 'error': '無効なリクエストです。'}, status=400)
+

@@ -127,3 +127,21 @@ uvicorn it_project_name.asgi:application --reload
 C:\Users\<ユーザー名>\AppData\Local\Programs\Python\Python313\Scripts
 C:\Users\<ユーザー名>\AppData\Local\Programs\Python\Python313
 C:mysql\bin
+
+
+
+
+--------------------------------------------
+マイグレーションについて
+
+DROP DATABASE hakatakoyu;
+CREATE DATABASE hakatakoyu CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+
+ET FOREIGN_KEY_CHECKS = 0;
+DROP TABLE IF EXISTS auth_user_groups, auth_user, ... ;  -- すべてのテーブル名を列挙
+SET FOREIGN_KEY_CHECKS = 1;
+
+rm app/migrations/0*.py
+
+python manage.py makemigrations
+python manage.py migrate
