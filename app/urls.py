@@ -30,5 +30,7 @@ urlpatterns = [
     path('post-comment/<int:thread_id>/', views.post_comment, name='post-comment'),
     path('report-comment/<int:comment_id>/', views.report_comment, name='report-comment'),
     path('report-thread/<int:thread_id>/', views.report_thread, name='report_thread'),
+    path('api/threads/', views.get_threads_by_category, name='get_threads_by_category'),
+    path('comment/<int:thread_id>/', views.comment, name='comment'),
 
 ]

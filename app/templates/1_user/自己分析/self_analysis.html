@@ -5,99 +5,113 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>自己分析アンケート</title>
     <style>
-        /* 全体のスタイル */
         body {
             font-family: Arial, sans-serif;
-            margin: 20px;
+            margin: 0;
             background-color: #2F3337; /* ダークテーマ背景色 */
             color: #E0E0E0; /* 明るい文字色 */
-        }
-
-        /* コンテナクラス: 中央寄せボタン */
-        .container {
-            width: 50%;
-            margin: 0 auto;
-            background-color: #40474F; /* ダークグレーの背景色 */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
             padding: 20px;
-            border-radius: 8px; /* 角を丸める */
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* ソフトな影を追加 */
         }
 
-        /* 見出しのスタイル: h1タグ */
-        h1 {
+        .container {
+            width: 100%;
+            max-width: 900px;
+            background-color: #40474F; /* ダークグレーの背景色 */
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
             text-align: center;
-            color: #D4D4D4; /* 明るいグレーの文字色 */
-            font-size: 2rem;
+            overflow-y: auto;
+            max-height: 100vh;
+        }
+
+        h1 {
+            color: #D4D4D4;
+            font-size: 2.2rem;
             margin-bottom: 20px;
         }
 
-        /* フォームのスタイル */
         form {
             display: flex;
             flex-direction: column;
+            align-items: center; /* 中央揃え */
+            width: 100%;
         }
 
         label {
-            font-size: 1rem;
-            margin-bottom: 5px;
+            font-size: 1.1rem;
+            margin-bottom: 10px;
+            color: #ffffff; /* 質問ラベルの色 */
         }
 
-        select {
-            margin-bottom: 15px;
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            background-color: #fff;
-            color: #333;
-        }
-
-        /* ボタンの基本スタイル */
-        button {
+        .category-section {
+            margin-bottom: 30px;
             width: 100%;
+        }
+
+        .checkbox-group {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center; /* 横並びで中央揃え */
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .checkbox-group div {
+            display: flex;
+            align-items: center;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 8px;
+        }
+
+        .guide-text {
+            color: #A8A8A8;
+            font-size: 0.9rem;
+        }
+
+        button {
+            width: 50%;
             padding: 12px;
             margin-bottom: 15px;
             border: none;
             border-radius: 4px;
-            background-color: #5DADDB; /* メインの青 */
+            background-color: #5DADDB;
             color: #FFFFFF;
             font-size: 1rem;
             cursor: pointer;
             transition: background-color 0.3s ease;
         }
 
-        /* ボタンのホバー状態 */
         button:hover {
-            background-color: #83C8F0; /* 明るい青に変化 */
+            background-color: #83C8F0;
         }
 
-        /* リセットボタンのホバー状態（マウスオーバー時） */
-        button[type="reset"]:hover {
-            background-color: #DB767E; /* ホバー時の背景色を暗い赤に変更 */
-        }
-
-        /* エラーメッセージのスタイル */
         .error-popup {
-            display: none; /* デフォルトでは非表示 */
-            border: 1px solid #f44336; /* 赤い境界線を設定 */
-            background-color: #ffebee; /* 薄い赤の背景 */
-            padding: 10px; /* 内側に10pxの余白を設定 */
-            margin-top: 10px; /* 上に10pxの余白を設定 */
-            color: #f44336; /* 赤い文字色 */
-            border-radius: 4px; /* 角を4pxで丸める */
+            display: none;
+            border: 1px solid #f44336;
+            background-color: #ffebee;
+            padding: 10px;
+            margin-top: 10px;
+            color: #f44336;
+            border-radius: 4px;
         }
 
         /* メディアクエリ: 小さい画面に対応 */
         @media (max-width: 768px) {
             .container {
-                width: 90%; /* 幅を90%に調整 */
+                width: 90%;
             }
-
             button {
-                font-size: 0.9rem; /* ボタンのフォントサイズを縮小 */
+                font-size: 0.9rem;
             }
-
             h1 {
-                font-size: 1.8rem; /* 見出しのサイズを縮小 */
+                font-size: 1.8rem;
             }
         }
     </style>
@@ -106,40 +120,244 @@
     <div class="container">
         <h1>自己分析アンケート</h1>
         <form id="selfAnalysisForm">
-            <label for="strength">1. 得意分野</label>
-            <select id="strength" name="strength">
-                <option value="">選択してください</option>
-                <option value="Java">Java</option>
-                <option value="Python">Python</option>
-                <option value="C言語">C言語</option>
-            </select>
+            <!-- プログラミング言語 -->
+            <div class="category-section">
+                <label for="programming">得意なプログラミング言語（複数選択可）</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="programming_c" name="programming" value="C">
+                        <span class="guide-text">C</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_cpp" name="programming" value="C++">
+                        <span class="guide-text">C++</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_csharp" name="programming" value="C#">
+                        <span class="guide-text">C#</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_java" name="programming" value="Java">
+                        <span class="guide-text">Java</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_python" name="programming" value="Python">
+                        <span class="guide-text">Python</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_php" name="programming" value="PHP">
+                        <span class="guide-text">PHP</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_javascript" name="programming" value="JavaScript">
+                        <span class="guide-text">JavaScript</span>
+                    </div>
+                    <br>
+                    <div>
+                        <input type="checkbox" id="programming_sql" name="programming" value="SQL">
+                        <span class="guide-text">SQL</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_vba" name="programming" value="VBA">
+                        <span class="guide-text">VBA</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="programming_ruby" name="programming" value="Ruby">
+                        <span class="guide-text">Ruby</span>
+                    </div>
+                </div>
+            </div>
 
-            <label for="weakness">2. 不得意分野</label>
-            <select id="weakness" name="weakness">
-                <option value="">選択してください</option>
-                <option value="Java">Java</option>
-                <option value="Python">Python</option>
-                <option value="C言語">C言語</option>
-            </select>
+            <!-- 得意分野 -->
+            <div class="category-section">
+                <label for="math">数学</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="math" name="math" value="未勉強">
+                        <span class="guide-text">未勉強</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="math_bad" name="math" value="苦手">
+                        <span class="guide-text">苦手</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="math_intro" name="math" value="入門知識">
+                        <span class="guide-text">入門知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="math_basic" name="math" value="基礎知識">
+                        <span class="guide-text">基礎知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="math_advanced" name="math" value="応用知識">
+                        <span class="guide-text">応用知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="math_experienced" name="math" value="実践経験アリ">
+                        <span class="guide-text">実践経験アリ</span>
+                    </div>
+                </div>
+            </div>
 
-            <label for="qualifications">3. 取得済みの資格</label>
-            <select id="qualifications" name="qualifications">
-                <option value="">選択してください</option>
-                <option value="ITパスポート">ITパスポート</option>
-                <option value="基本情報技術者試験">基本情報技術者試験</option>
-                <option value="応用情報技術者試験">応用情報技術者試験</option>
-            </select>
+            <!-- アルゴリズム -->
+            <div class="category-section">
+                <label for="algorithm">アルゴリズム</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="algorithm" name="algorithm" value="未勉強">
+                        <span class="guide-text">未勉強</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="algorithm_bad" name="algorithm" value="苦手">
+                        <span class="guide-text">苦手</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="algorithm_intro" name="algorithm" value="入門知識">
+                        <span class="guide-text">入門知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="algorithm_basic" name="algorithm" value="基礎知識">
+                        <span class="guide-text">基礎知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="algorithm_advanced" name="algorithm" value="応用知識">
+                        <span class="guide-text">応用知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="algorithm_experienced" name="algorithm" value="実践経験アリ">
+                        <span class="guide-text">実践経験アリ</span>
+                    </div>
+                </div>
+            </div>
 
-            <label for="career">4. 現在の職種、目指している職種</label>
-            <select id="career" name="career">
-                <option value="">選択してください</option>
-                <option value="システムエンジニア">システムエンジニア</option>
-                <option value="コンサルタント">コンサルタント</option>
-                <option value="プログラマー">プログラマー</option>
-            </select>
+            <!-- データベース -->
+            <div class="category-section">
+                <label for="database">データベース</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="database" name="database" value="未勉強">
+                        <span class="guide-text">未勉強</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="database_bad" name="database" value="苦手">
+                        <span class="guide-text">苦手</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="database_intro" name="database" value="入門知識">
+                        <span class="guide-text">入門知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="database_basic" name="database" value="基礎知識">
+                        <span class="guide-text">基礎知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="database_advanced" name="database" value="応用知識">
+                        <span class="guide-text">応用知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="database_experienced" name="database" value="実践経験アリ">
+                        <span class="guide-text">実践経験アリ</span>
+                    </div>
+                </div>
+            </div>
 
-            <button type="button" onclick="analyze()">分析開始</button>
-            <button type="reset">条件クリア</button>
+            <!-- ネットワーク -->
+            <div class="category-section">
+                <label for="network">ネットワーク</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="network" name="network" value="未勉強">
+                        <span class="guide-text">未勉強</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="network_bad" name="network" value="苦手">
+                        <span class="guide-text">苦手</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="network_intro" name="network" value="入門知識">
+                        <span class="guide-text">入門知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="network_basic" name="network" value="基礎知識">
+                        <span class="guide-text">基礎知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="network_advanced" name="network" value="応用知識">
+                        <span class="guide-text">応用知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="network_experienced" name="network" value="実践経験アリ">
+                        <span class="guide-text">実践経験アリ</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- セキュリティ -->
+            <div class="category-section">
+                <label for="security">セキュリティ</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="security" name="security" value="未勉強">
+                        <span class="guide-text">未勉強</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="security_bad" name="security" value="苦手">
+                        <span class="guide-text">苦手</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="security_intro" name="security" value="入門知識">
+                        <span class="guide-text">入門知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="security_basic" name="security" value="基礎知識">
+                        <span class="guide-text">基礎知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="security_advanced" name="security" value="応用知識">
+                        <span class="guide-text">応用知識</span>
+                    </div>
+                    <div>
+                        <input type="checkbox" id="security_experienced" name="security" value="実践経験アリ">
+                        <span class="guide-text">実践経験アリ</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 取得済み資格 -->
+            <div class="category-section">
+                <label for="qualifications">取得済みの資格</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="qualifications_example" name="qualifications" value="資格例">
+                        <span class="guide-text">資格例</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 現在の職種 -->
+            <div class="category-section">
+                <label for="career">現在の職種</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="career_example" name="career" value="職種例">
+                        <span class="guide-text">職種例</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 目指している職種 -->
+            <div class="category-section">
+                <label for="target_career">目指している職種</label>
+                <div class="checkbox-group">
+                    <div>
+                        <input type="checkbox" id="target_career_example" name="target_career" value="職種例">
+                        <span class="guide-text">職種例</span>
+                    </div>
+                </div>
+            </div>
+
+            <button type="button" onclick="submitForm()">送信</button>
+            <button type="reset">リセット</button>
         </form>
 
         <div id="errorPopup" class="error-popup">
@@ -148,18 +366,22 @@
     </div>
 
     <script>
-        function analyze() {
-            const strength = document.getElementById("strength").value;
-            const weakness = document.getElementById("weakness").value;
-            const qualifications = document.getElementById("qualifications").value;
-            const career = document.getElementById("career").value;
+        function submitForm() {
+            const form = document.getElementById("selfAnalysisForm");
+            const fields = form.querySelectorAll("input[type='checkbox']");
 
-            if (!strength || !weakness || !qualifications || !career) {
-                document.getElementById("errorPopup").style.display = "block";
+            let valid = true;
+            fields.forEach(field => {
+                if (field.type === 'checkbox' && !field.checked) {
+                    valid = false;
+                }
+            });
+
+            if (valid) {
+                alert("フォームが送信されました！");
+                // 必要な処理をここに追加
             } else {
-                document.getElementById("errorPopup").style.display = "none";
-                alert("分析を開始します。");
-                // 必要に応じて次画面に遷移する処理をここに追加
+                document.getElementById("errorPopup").style.display = "block";
             }
         }
     </script>

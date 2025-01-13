@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>スレッド投稿</title>
     <style>
-        /* 既存スタイルはそのまま保持 */
         body {
             font-family: 'Roboto', sans-serif;
             margin: 0;
@@ -48,7 +47,7 @@
         }
 
         .sidebar .sidebar-btn:hover {
-            background-color: #1abc9c;
+            background-color: #16a085;
         }
 
         .category-title {
@@ -117,26 +116,74 @@
             display: flex;
             flex-direction: column;
             background-color: #ffffff;
-            padding: 15px;
-            margin-bottom: 10px;
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 5px; /* 縮小 */
+            margin-bottom: 3px;
+            border-radius: 3px;
+            box-shadow: none; /* 必要に応じて影を削除 */
+            border: none;
+        }
+
+        /* リンクのスタイルを制御 */
+        .thread a {
+            text-decoration: none !important; /* 下線を完全に消す */
+            color: inherit; /* 親要素の色を引き継ぐ */
+            display: block; /* 全体をリンク化 */
+        }
+
+        /* ホバー時のスタイル */
+        .thread a:hover {
+            text-decoration: none !important; /* 下線をホバー時も消す */
+            color: inherit; /* ホバー時も色を維持 */
         }
 
         .thread-header {
             display: flex;
-            justify-content: space-between;
+            justify-content: flex-start; /* 左寄せ */
             align-items: center;
             margin-bottom: 10px;
         }
 
-        .thread-header strong {
-            font-size: 18px;
+        .thread-updated {
+            font-size: 14px;
+            color: #7f8c8d; /* 色を薄める */
+            text-align: left; /* テキストを左揃え */
+        }
+
+        .thread-content {
+            font-size: 25px; /* コメントをさらに大きく */
+            font-weight: bold; /* 太字 */
+            color: #2c3e50; /* コメントを強調するため濃い色 */
+            margin-bottom: 1px;
+        }
+
+        .thread-meta {
+            display: flex;
+            align-items: center;
+            gap: 10px; /* 投稿者名と最終更新の間に余白を追加 */
+        }
+
+        .thread-meta strong {
+            font-size: 14px; /* サイズを小さく */
+            color: #95a5a6; /* 色を薄める */
+        }
+
+        .thread-meta span {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+    
+        /* コメント数を右下に表示 */
+        .thread-footer {
+            font-size: 14px;
+            color: #7f8c8d;
+            text-align: right;
+            margin-top: 5px; /* コメント数の余白を縮小 */
         }
 
         .thread-header span {
             font-size: 14px;
             color: #7f8c8d;
+            margin-bottom: 1px;
         }
 
         .no-threads {
@@ -144,54 +191,119 @@
             color: #7f8c8d;
             font-size: 18px;
         }
+
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const categoryButtons = document.querySelectorAll('.sidebar-btn');
+            const categoryButtons = document.querySelectorAll('.sidebar-btn:not(.sidebar-btn-home)');
+            const homeButton = document.querySelector('.sidebar-btn-home');
             const threadList = document.querySelector('.post-list');
-            const allThreads = JSON.parse('{{ threads|safe }}'); // サーバーからのスレッドデータ
             let activeCategory = null;
-
+        
+            // スレッド描画関数
             function renderThreads(threads) {
                 threadList.innerHTML = '';
                 if (threads.length === 0) {
                     threadList.innerHTML = '<p class="no-threads">現在スレッドがありません。</p>';
                     return;
                 }
-
+            
                 threads.forEach(thread => {
                     const threadElement = document.createElement('div');
                     threadElement.classList.add('thread');
                     threadElement.innerHTML = `
-                        <div class="thread-header">
-                            <strong>${thread.author} (${thread.number})</strong>
-                            <span>最終更新: ${thread.last_updated}</span>
-                        </div>
-                        <p>${thread.first_comment}</p>
+                        <a href="/comment/${thread.id}/" class="thread-link">
+                            <div class="thread-header">
+                                <span class="thread-updated">最終更新: ${thread.last_updated}</span>
+                            </div>
+                            <div class="thread-content">
+                                ${thread.first_comment}
+                            </div>
+                            <div class="thread-footer">
+                                ${thread.comment_count} コメント
+                            </div>
+                        </a>
                     `;
                     threadList.appendChild(threadElement);
                 });
             }
-
+            
+            
+        
+            // カテゴリと値のマッピング
+            const categoryMap = {
+                '国家資格': 'national',
+                'ベンダー資格': 'vendor',
+                'プログラミング言語': 'programming',
+                'ソフトウェア': 'software',
+                'ハードウェア': 'hardware',
+                'データベース': 'database',
+                'ネットワーク': 'network',
+                'セキュリティ': 'security',
+            };
+            
+            
+            // カテゴリボタンのクリックイベント
             categoryButtons.forEach(button => {
                 button.addEventListener('click', () => {
+                    const selectedCategory = button.textContent.trim(); // ボタンのテキスト
+                    const categoryValue = categoryMap[selectedCategory]; // マッピングからカテゴリ値を取得
+            
+                    if (!categoryValue) {
+                        console.error(`カテゴリ "${selectedCategory}" は無効です。`);
+                        return;
+                    }
+            
+                    // 現在のカテゴリ選択を管理
                     if (activeCategory === button) {
-                        activeCategory.classList.remove('active');
+                        button.classList.remove('active');
                         activeCategory = null;
-                        renderThreads(allThreads);
+                        fetchThreads(); // 全スレッドを取得
                     } else {
                         if (activeCategory) activeCategory.classList.remove('active');
                         activeCategory = button;
                         activeCategory.classList.add('active');
-                        const filteredThreads = allThreads.filter(thread => thread.category === button.textContent.trim());
-                        renderThreads(filteredThreads);
+                        fetchThreads(categoryValue); // 選択されたカテゴリでスレッドを取得
                     }
                 });
             });
-
-            renderThreads(allThreads); // 初期表示
+            
+        
+            // スレッドを取得する関数
+            function fetchThreads(category = null) {
+                const url = category ? `/api/threads/?category=${encodeURIComponent(category)}` : '/api/threads/';
+                console.log(`Fetching threads from URL: ${url}`); // デバッグログ
+        
+                fetch(url)
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error(`HTTPエラー! ステータス: ${response.status}`);
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        console.log('Fetched threads:', data); // デバッグログ
+                        renderThreads(data.threads); // スレッドを描画
+                    })
+                    .catch(error => {
+                        console.error('スレッド取得中にエラーが発生しました:', error);
+                        threadList.innerHTML = '<p class="no-threads">スレッドを取得できませんでした。再試行してください。</p>';
+                    });
+            }
+        
+            // 初期状態で全スレッドを取得
+            fetchThreads();
+        
+            // ホームボタンのクリックイベント
+            homeButton.addEventListener('click', () => {
+                window.location.href = '/';
+            });
         });
+        
     </script>
+    
+    
+    
 </head>
 <body>
     <div class="container">
@@ -230,6 +342,7 @@
                 <button type="submit">スレッドを作成</button>
             </form>
 
+            <!-- スレッドリスト -->
             <div class="post-list">
                 <p class="no-threads">現在スレッドがありません。</p>
             </div>

@@ -19,7 +19,26 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import Comment
 from .models import Thread, Comment
+
 User = get_user_model()  # カスタムユーザーモデルを使用
+from django.contrib import messages
+
+from django.contrib import messages
+
+def remove_duplicate_messages(request):
+    storage = messages.get_messages(request)
+    unique_messages = []
+    unique_message_texts = set()
+
+    for message in storage:
+        if message.message not in unique_message_texts:
+            unique_message_texts.add(message.message)
+            unique_messages.append(message)
+
+    # 再登録するためにストレージをリセット
+    storage._loaded_data = unique_messages
+    storage.used = False
+
 
 # パスワードをリセットする例
 def reset_password_example():
@@ -53,9 +72,10 @@ def register(request):
         form = CustomUserCreationForm()
 
     return render(request, '1_user/新規登録/register.html', {'form': form})
-
+from django.contrib import messages
 # ログイン処理
 def login_view(request):
+    remove_duplicate_messages(request)
     if request.method == 'POST':
         email = request.POST.get('email')
         password = request.POST.get('password')
@@ -73,6 +93,22 @@ def login_view(request):
                 messages.error(request, 'このメールアドレスは登録されていません。')
         else:
             messages.error(request, 'メールアドレスを入力してください。')
+
+    storage = messages.get_messages(request)
+    
+    # メッセージ内容を文字列として取得し、重複排除
+    unique_message_texts = set()
+    unique_messages = []
+    for message in storage:
+        if message.message not in unique_message_texts:
+            unique_message_texts.add(message.message)
+            unique_messages.append(message)
+
+    # 再登録するためにメッセージをクリア
+    storage.used = False
+    storage._queued_messages = unique_messages
+    
+
     return render(request, '1_user/ログイン_ログアウト/login.html')
 
 # ログアウト処理
@@ -119,31 +155,32 @@ from django.urls import reverse
 # スレッド作成処理
 def create_thread(request):
     if request.method == 'POST':
-        category_key = request.POST.get('category')  # 英語のキーを取得
+        category_key = request.POST.get('category')
         content = request.POST.get('content')
 
-        # カテゴリと内容が必須
         if not category_key or not content:
             return render(request, '1_user/コミュフォ/community_thread.html', {'error': 'カテゴリと内容は必須です'})
 
-        # スレッドを作成
+        category_dict = dict(Thread.CATEGORY_CHOICES)
+        category = category_dict.get(category_key, category_key)
+
+        # スレッド作成
         thread = Thread.objects.create(
-            category=dict(Thread.CATEGORY_CHOICES).get(category_key, category_key),  # 日本語に変換
+            category=category,
             created_by=request.user
         )
 
-        # スレッドの初コメントを作成
+        # 初コメント作成
         Comment.objects.create(
-            category=dict(Thread.CATEGORY_CHOICES).get(category_key, category_key),  # 日本語に変換
             content=content,
             thread=thread,
             author=request.user
         )
 
-        # スレッド詳細ページにリダイレクト
         return redirect(reverse('comment', kwargs={'thread_id': thread.id}))
 
     return render(request, '1_user/コミュフォ/community_thread.html')
+
 
 
 # スレッド詳細（コメント一覧表示）
@@ -254,4 +291,54 @@ def report_comment(request, comment_id):
         except Comment.DoesNotExist:
             return JsonResponse({'success': False, 'error': 'コメントが見つかりませんでした。'}, status=404)
     return JsonResponse({'success': False, 'error': '無効なリクエストです。'}, status=400)
+
+from django.http import JsonResponse
+from .models import Thread
+
+from django.http import JsonResponse
+
+from django.http import JsonResponse
+from .models import Thread
+
+def get_threads_by_category(request):
+    # クエリパラメータからカテゴリを取得
+    category = request.GET.get('category', None)
+    print(f"受信カテゴリ: {category}")
+
+    # カテゴリマッピング（英語 -> 日本語）
+    category_map = dict(Thread.CATEGORY_CHOICES)
+    category_jp = category_map.get(category)  # 英語を日本語に変換
+
+    # カテゴリバリデーション
+    if category and not category_jp:
+        print(f"無効なカテゴリが指定されました: {category}")
+        return JsonResponse({'error': '無効なカテゴリです'}, status=400)
+
+    # スレッドを取得
+    if category_jp:
+        threads = Thread.objects.filter(category=category_jp).order_by('-updated_at')
+    else:
+        threads = Thread.objects.all().order_by('-updated_at')
+
+    print(f"取得されたスレッド数: {threads.count()}")
+    print(f"取得されたスレッドデータ: {threads}")
+
+    # スレッドリストを作成
+    thread_list = [{
+        'id': thread.id,
+        'category': thread.category,
+        'created_by': thread.created_by.username,
+        'first_comment': thread.comments.first().content if thread.comments.exists() else 'コメントがありません',
+        'last_updated': thread.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'comment_count': thread.comments.count(),
+    } for thread in threads]
+
+    print(f"レスポンスデータ: {thread_list}")
+
+    return JsonResponse({'threads': thread_list})
+
+
+
+
+
 

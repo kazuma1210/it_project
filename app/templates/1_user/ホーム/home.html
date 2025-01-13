@@ -177,6 +177,13 @@
             <a href="{% url 'login' %}">ログイン</a>
         {% endif %}
     </div>
+    
+    {% if not user.is_authenticated %}
+    <div style="text-align: center; margin-top: 20px; color: #F44336; font-weight: bold;">
+        ※コミュニティフォーラム機能とユーザー情報機能を利用するにはアカウントの作成及びログインが必要です
+    </div>
+    {% endif %}
+    
 
     <!-- ポップアップ -->
     <div class="popup-overlay" id="popup-overlay"></div>
