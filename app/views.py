@@ -59,20 +59,150 @@ def home(request):
     return render(request, '1_user/ホーム/home.html', context)
 
 # 新規登録処理
+import random
+from django.core.mail import send_mail
+
+import random
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
+import random
+from django.core.mail import send_mail
+from django.shortcuts import render, redirect
+from django.contrib import messages
+
 def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            form.save()  # 新規登録したユーザーをデータベースに保存
-            messages.success(request, 'アカウントが作成されました！ログインしてください。')
-            return redirect('login')  # ログインページへリダイレクト
-        else:
-            messages.error(request, '入力内容に誤りがあります。もう一度お試しください。')
-    else:
-        form = CustomUserCreationForm()
+            # ユーザー情報をセッションに保存
+            request.session['username'] = form.cleaned_data['username']
+            request.session['email'] = form.cleaned_data['email']
+            request.session['password'] = form.cleaned_data['password1']
 
-    return render(request, '1_user/新規登録/register.html', {'form': form})
+            # 認証コード生成
+            verification_code = random.randint(1000, 9999)
+            request.session['verification_code'] = verification_code
+
+            # メール送信
+            send_mail(
+                '認証コードのお知らせ',  # 件名
+                f'以下の認証コードを入力してください: {verification_code}',  # 本文
+                'info001@meltfire.net',  # 送信元
+                [form.cleaned_data['email']],  # 送信先リスト
+                fail_silently=False,  # エラー発生時に例外を発生
+            )
+
+            messages.success(request, '認証コードを送信しました。メールをご確認ください。')
+            return redirect('verify_email')  # 認証コード入力画面にリダイレクト
+        else:
+            messages.error(request, '入力内容に誤りがあります。')
+
+    return render(request, '1_user/新規登録/register.html')
+
+
+
+
+from .models import CustomUser
+
+from django.shortcuts import render, redirect
 from django.contrib import messages
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.contrib.auth import get_user_model
+
+User = get_user_model()
+
+def verify_email(request):
+    if request.method == 'POST':
+        code = request.POST.get('code')
+        session_code = request.session.get('verification_code')
+        email = request.session.get('email')
+
+        if int(code) != session_code:
+            messages.error(request, '認証コードが間違っています。')
+            return redirect('verify_email')
+
+        # ユーザーが存在するか確認
+        user = User.objects.filter(email=email).first()
+        if not user:
+            # 新規ユーザー作成
+            user = User.objects.create_user(email=email, password='temporary_password')  # 仮のパスワード
+            user.save()
+
+        messages.success(request, '認証が成功しました。新しいパスワードを設定してください。')
+        return redirect('reset_password')
+
+    return render(request, '1_user/新規登録/verify_email.html')
+
+
+
+from django.contrib.auth.hashers import make_password
+
+from django.contrib.auth.hashers import make_password
+
+
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.mail import send_mail
+from django.contrib.auth.models import User
+import random
+
+def password_reset_email(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        user = User.objects.filter(email=email).first()
+
+        if not user:
+            messages.error(request, '登録されていないメールアドレスです。')
+            return redirect('password_reset_email')
+
+        # 認証コードを生成
+        verification_code = random.randint(1000, 9999)
+        request.session['verification_code'] = verification_code
+        request.session['email'] = email
+
+        # 認証コードを送信
+        send_mail(
+            'パスワードリセット認証コード',
+            f'以下の認証コードを入力してください: {verification_code}',
+            'info001@meltfire.net',  # 送信元メール
+            [email],
+            fail_silently=False,
+        )
+
+        messages.success(request, '認証コードを送信しました。メールをご確認ください。')
+        return redirect('verify_email')
+
+    return render(request, '1_user/ログイン_ログアウト/password_reset_email.html')  # メールアドレス入力画面
+
+
+
+def reset_password(request):
+    if request.method == 'POST':
+        new_password = request.POST.get('new_password')
+        confirm_password = request.POST.get('confirm_password')
+        email = request.session.get('email')
+
+        if new_password != confirm_password:
+            messages.error(request, 'パスワードが一致しません。')
+            return redirect('reset_password')
+
+        # パスワードを更新
+        user = User.objects.get(email=email)
+        user.password = make_password(new_password)  # ハッシュ化して保存
+        user.save()
+
+        messages.success(request, 'パスワードが更新されました。ログインしてください。')
+        return redirect('login')
+
+    return render(request, '1_user/ログイン_ログアウト/reset_password.html')  # パスワードリセット画面
+
+
+
+
 # ログイン処理
 def login_view(request):
     remove_duplicate_messages(request)

@@ -32,5 +32,11 @@ urlpatterns = [
     path('report-thread/<int:thread_id>/', views.report_thread, name='report_thread'),
     path('api/threads/', views.get_threads_by_category, name='get_threads_by_category'),
     path('comment/<int:thread_id>/', views.comment, name='comment'),
+    path('password-reset/', views.password_reset_email, name='password_reset_email'),
+    # 認証コード入力画面
+    path('verify-email/', views.verify_email, name='verify_email'),
+    # パスワードリセット画面
+    path('reset-password/', views.reset_password, name='reset_password'),
 
+    
 ]

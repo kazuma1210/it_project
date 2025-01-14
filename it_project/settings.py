@@ -109,13 +109,15 @@ STATICFILES_DIRS = [
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # メール送信の設定
+# メール送信の設定
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'sandbox.smtp.mailtrap.io'
-EMAIL_PORT = 2525
-EMAIL_HOST_USER = '15ad0f22a9098e'
-EMAIL_HOST_PASSWORD = '74eded4009c27c'
+EMAIL_HOST = 'mail76.conoha.ne.jp'
+EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-DEFAULT_FROM_EMAIL = 'your_email@example.com'
+EMAIL_HOST_USER = 'info001@meltfire.net'
+EMAIL_HOST_PASSWORD = 'info001%'
+DEFAULT_FROM_EMAIL = 'info001@meltfire.net'
+
 
 AUTH_USER_MODEL = 'app.CustomUser'
 AUTH_USER_MODEL = 'auth.User'

@@ -15,18 +15,48 @@ CATEGORY_CHOICES = [
 ]
 
 class CustomUser(AbstractUser):
-    email = models.EmailField(unique=True, max_length=191)  # 制限を191に変更
+    email = models.EmailField(unique=True, max_length=191)
+    username = None  # `username` フィールドを削除
 
     groups = models.ManyToManyField(
         Group,
-        related_name="customuser_groups",  # 他と競合しないよう設定
+        related_name="customuser_groups",
         blank=True,
     )
     user_permissions = models.ManyToManyField(
         Permission,
-        related_name="customuser_permissions",  # 他と競合しないよう設定
+        related_name="customuser_permissions",
         blank=True,
     )
+
+    USERNAME_FIELD = 'email'  # ログインに使用するフィールドを `email` に設定
+    REQUIRED_FIELDS = []  # 必須フィールドに `email` のみ設定
+
+from django.contrib.auth.models import AbstractUser, BaseUserManager
+from django.db import models
+
+class CustomUserManager(BaseUserManager):
+    def create_user(self, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        extra_fields.setdefault('is_active', True)
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+
+        if extra_fields.get('is_staff') is not True:
+            raise ValueError('Superuser must have is_staff=True.')
+        if extra_fields.get('is_superuser') is not True:
+            raise ValueError('Superuser must have is_superuser=True.')
+
+        return self.create_user(email, password, **extra_fields)
+
 
 # プロフィールモデル
 class Profile(models.Model):
@@ -93,3 +123,4 @@ class Comment(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     report_count = models.IntegerField(default=0)
+

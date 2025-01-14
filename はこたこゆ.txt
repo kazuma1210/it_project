@@ -1,0 +1,4 @@
+mail:info001@meltfire.net
+pass:info001%
+
+smtp:mail76.conoha.ne.jp
