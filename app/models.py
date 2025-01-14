@@ -1,6 +1,11 @@
 from django.contrib.auth.models import AbstractUser, Group, Permission
 from django.db import models
 from django.conf import settings
+import uuid
+from django.contrib.auth.models import BaseUserManager  # 必要なインポートを追加
+
+    # 実装
+
 
 # カスタムユーザーモデル
 CATEGORY_CHOICES = [
@@ -32,8 +37,6 @@ class CustomUser(AbstractUser):
     USERNAME_FIELD = 'email'  # ログインに使用するフィールドを `email` に設定
     REQUIRED_FIELDS = []  # 必須フィールドに `email` のみ設定
 
-from django.contrib.auth.models import AbstractUser, BaseUserManager
-from django.db import models
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, email, password=None, **extra_fields):
@@ -75,20 +78,6 @@ class Profile(models.Model):
         return self.user.username
 
 # スレッドモデル
-from django.db import models
-from django.conf import settings
-
-
-import uuid
-
-from django.db import models
-from django.conf import settings
-
-from django.db import models
-from django.conf import settings
-
-from django.db import models
-from django.conf import settings
 
 class Thread(models.Model):
     CATEGORY_CHOICES = [
@@ -112,10 +101,6 @@ class Thread(models.Model):
             self.thread_id = f"thread-{uuid.uuid4().hex[:8]}"
         super().save(*args, **kwargs)
 
-
-
-
-
 class Comment(models.Model):
     thread = models.ForeignKey(Thread, on_delete=models.CASCADE, related_name='comments')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES)
@@ -123,4 +108,10 @@ class Comment(models.Model):
     author = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     created_at = models.DateTimeField(auto_now_add=True)
     report_count = models.IntegerField(default=0)
+
+class UserReportData(models.Model):
+    user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    reported_threads = models.IntegerField(default=0)
+    reported_comments = models.IntegerField(default=0)
+
 
