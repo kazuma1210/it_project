@@ -1,9 +1,0 @@
-{% load static %}
-<div>
-    <h2>ログアウトしますか？</h2>
-    <form method="post">
-        {% csrf_token %}
-        <button type="submit">はい</button>
-        <button type="button" onclick="window.history.back()">いいえ</button>
-    </form>
-</div>
