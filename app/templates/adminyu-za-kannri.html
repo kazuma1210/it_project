@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>プロフィール</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f9f9f9;
+        }
+        .container {
+            position: relative;
+            display: flex;
+            flex-wrap: wrap;
+            width: 90%;
+            max-width: 1200px;
+            margin: 40px auto;
+            background-color: white;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            padding: 30px;
+        }
+        .left-section {
+            flex: 4;
+            margin-right: 30px;
+        }
+        .right-section {
+            flex: 2;
+            margin-left: 50px;
+            border-left: 1px solid #ddd;
+            padding-left: 20px;
+            line-height: 1.8;
+        }
+        .button {
+            display: block;
+            width: 100%;
+            max-width: 1000px;
+            margin: 10px 0;
+            padding: 15px;
+            text-align: center;
+            background-color: #e0e0e0;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 18px;
+            border: 1px solid #ccc;
+            height: 60px;
+        }
+        .button:hover {
+            background-color: #d0d0d0;
+        }
+        .header {
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .profile-info {
+            margin-bottom: 30px;
+        }
+        .stats {
+            margin-top: 30px;
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+        .stats div {
+            margin-bottom: 20px;
+        }
+        .manage-button {
+            background-color: #ffa07a;
+            color: white;
+            border: none;
+        }
+        .manage-button:hover {
+            background-color: #ff7f50;
+        }
+        .back-button {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: #007bff;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .back-button:hover {
+            background-color: #0056b3;
+        }
+        /* タイトルを左に寄せる */
+        .page-title {
+            position: absolute;
+            top: 30px;
+            left: 230px;
+            font-size: 26px;
+            font-weight: bold;
+            margin: 0;
+        }
+        /* 自己紹介ラベルを調整 */
+        .left-section .header {
+            margin-top: 70px;
+            margin-left: 20px;
+        }
+        /* 自己紹介ラベル以降のレイアウトを調整 */
+        .left-section .profile-info {
+            margin-top: 20px;
+        }
+        /* アカウント作成日時の位置調整 */
+        .right-section .header {
+            margin-top: 68px; /* 少し下げる */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 戻るボタンを枠内左上に配置 -->
+        <button class="back-button" onclick="window.history.back()">戻る</button> 
+        
+        <!-- タイトルを枠内左に配置 -->
+        <div class="page-title">denshi309さんのプロフィール</div> 
+
+        <div class="left-section">
+            <div class="header">自己紹介</div>
+            <div class="button">天才です</div>
+
+            <div class="header">現在の職種または学科</div>
+            <div class="button">情報処理学科</div>
+
+            <div class="header">取得資格</div>
+            <div class="button">ITパスポート<br>情報セキュリティマネジメント</div>
+
+            <div class="header">目標資格</div>
+            <div class="button">基本情報技術者試験<br>応用情報技術者試験</div>
+        </div>
+
+        <div class="right-section">
+            <div class="header">アカウント作成日時</div>
+            <div>2024/12/12</div>
+
+            <div class="stats">
+                <div>書き込み回数: 999回</div>
+                <div>総コメント回数: 7回</div>
+                <div>累計削除回数: 3回</div>
+                <div>過去の投稿削除回数: 0回</div>
+                <div>現在: 未規制</div>
+            </div>
+
+            <button class="button manage-button">管理</button>
+        </div>
+    </div>
+</body>
+</html>
+
