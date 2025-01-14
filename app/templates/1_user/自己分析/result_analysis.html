@@ -1,0 +1,171 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>資格マッチ診断</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+        header {
+            background-color: orange;
+            color: white;
+            padding: 10px;
+            text-align: center;
+        }
+        .main-title {
+            font-size: 32px;
+            font-weight: bold;
+            margin: 0;
+            background-color: orange;
+            color: white;
+            padding: 10px 30px;
+            border-radius: 5px;
+            width: 80%;
+            margin: 10px auto;
+        }
+        .sub-header {
+            text-align: center;
+            font-size: 16px;
+            margin: 10px 0 30px;
+        }
+        .container {
+            width: 80%;
+            margin: 30px auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        .evaluation-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 30px;
+        }
+        .overall {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: bold;
+            border: 2px solid orange;
+            background-color: #fff4e0;
+            width: 150px;
+            height: 150px;
+            border-radius: 5px;
+            text-align: center;
+            margin-right: 20px;
+        }
+        .overall-text {
+            font-size: 20px;
+            position: relative;
+            top: -110px; /* 文字をさらに上に移動 */
+        }
+        .overall-grade {
+            font-size: 60px;
+            font-weight: bold;
+            margin-top: 80px;
+        }
+        .details-table {
+            flex: 2;
+            margin-top: 20px;
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .details-table th, .details-table td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .details-table th {
+            background-color: #f9f9f9;
+            font-weight: bold;
+        }
+        .home-button {
+            display: block;
+            width: 100px;
+            margin: 20px auto;
+            padding: 10px;
+            text-align: center;
+            background-color: orange;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+        }
+        .home-button:hover {
+            background-color: darkorange;
+        }
+        .dropdown-container {
+            display: flex;
+            align-items: center;
+            margin: 20px 0;
+        }
+        .dropdown-container label {
+            font-size: 16px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+        .dropdown-container select {
+            padding: 5px;
+            font-size: 16px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        あなたの適正資格:
+        <div class="main-title">
+            ITパスポート、基本情報
+        </div>
+    </header>
+    <div class="sub-header">
+        適正資格を診断しよう！
+    </div>
+
+    <div class="dropdown-container" style="margin-left: 10%;">
+        <label for="goal-qualification">目標としている資格:</label>
+        <select id="goal-qualification">
+            <option value="it-passport">ITパスポート</option>
+            <option value="basic-it-engineer">基本情報技術者試験</option>
+            <option value="applied-it-engineer">応用情報技術者試験</option>
+        </select>
+    </div>
+
+    <div class="container">
+        <div class="evaluation-section">
+            <div class="overall">
+                <div class="overall-grade">A</div>
+                <div class="overall-text">総合評価</div>
+            </div>
+            <table class="details-table">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>説明</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>難易度</td>
+                        <td>（ここに難易度の説明が入ります）</td>
+                    </tr>
+                    <tr>
+                        <td>需要度</td>
+                        <td>（ここに需要度の説明が入ります）</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <a href="#" class="home-button">ホーム</a>
+</body>
+</html>

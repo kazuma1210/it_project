@@ -1,0 +1,221 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プロフィール編集</title>
+  <style>
+    /* 全体のスタイル */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 1000px;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      color: #2c3e50;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    button:active {
+      background-color: #2471a3;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .profile-info {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 30px;
+    }
+
+    .info-item {
+      width: 48%;
+    }
+
+    .info-item label {
+      font-weight: bold;
+      font-size: 16px;
+      margin-bottom: 8px;
+      color: #555;
+      display: flex;
+    }
+
+    .info-item input {
+      width: 100%;
+      padding: 12px 15px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: border 0.3s ease;
+    }
+
+    .info-item input:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    .details .section {
+      margin-bottom: 30px;
+    }
+
+    .details input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      transition: border 0.3s ease;
+    }
+
+    .details input:focus {
+      border-color: #3498db;
+      outline: none;
+    }
+
+    .popup {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 300px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      text-align: center;
+      padding: 20px;
+      z-index: 1000;
+    }
+
+    .popup button {
+      margin-top: 15px;
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    .popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>マイページ - プロフィール編集</h1>
+      <button onclick="location.href='{% url 'home' %}'">ホームに戻る</button>
+    </div>
+
+    <form method="POST" action="{% url 'save_profile' %}">
+      {% csrf_token %}
+      <div class="profile">
+        <div class="profile-info">
+          <div class="info-item">
+            <label for="user-id">ユーザーID</label>
+            <input type="text" id="user-id" name="user_id" value="{{ user.username }}" readonly>
+          </div>
+          <div class="info-item">
+            <label for="email">メールアドレス</label>
+            <input type="email" id="email" name="email" value="{{ user.email }}" readonly>
+          </div>
+        </div>
+
+        <div class="details">
+          <div class="section">
+            <label for="self-intro">自己紹介</label>
+            <input type="text" id="self-intro" name="self_intro" value="{{ profile.self_intro|default:'' }}" placeholder="プロフィールに自己紹介を追加する">
+
+          </div>
+          <div class="section">
+            <label for="current-position">現在の職種または学科</label>
+            <input type="text" id="current-position" name="current_position" value="{{ profile.current_position|default:"" }}" placeholder="例: 情報処理学科">
+          </div>
+          <div class="section">
+            <label for="qualifications">取得資格</label>
+            <input type="text" id="qualifications" name="qualifications" value="{{ profile.qualifications|default:"" }}" placeholder="例: ITパスポート">
+          </div>
+          <div class="section">
+            <label for="target-qualifications">目標資格</label>
+            <input type="text" id="target-qualifications" name="target_qualifications" value="{{ profile.target_qualifications|default:"" }}" placeholder="例: 応用情報技術者">
+          </div>
+        </div>
+      </div>
+
+      <div class="popup-overlay" id="popup-overlay"></div>
+      <div class="popup" id="save-popup">
+        <p>保存されました！</p>
+        <button type="button" onclick="closePopup()">閉じる</button>
+      </div>
+
+      <button type="submit">保存</button>
+    </form>
+  </div>
+
+  <script>
+    function closePopup() {
+      document.getElementById('popup-overlay').style.display = 'none';
+      document.getElementById('save-popup').style.display = 'none';
+    }
+  </script>
+</body>
+</html>

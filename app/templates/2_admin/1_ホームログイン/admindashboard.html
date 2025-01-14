@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ダッシュボード</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        .container {
+            width: 50%; /* 幅を50%に設定して中央に配置 */
+            margin: 50px auto;
+            padding: 40px;
+            background-color: #fff;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            text-align: center; /* テキストを中央寄せ */
+        }
+        h1 {
+            color: #333;
+            font-size: 24px;
+            margin-bottom: 40px; /* タイトルとボタンの間に余白 */
+        }
+        .btn-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .btn {
+            padding: 15px 30px; /* ボタンのサイズを大きく */
+            font-size: 18px; /* フォントサイズを大きく */
+            color: white;
+            background-color: #4CAF50;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-bottom: 20px; /* ボタン間に余白 */
+            width: 60%; /* ボタンの幅を調整 */
+            max-width: 300px; /* 最大幅を設定 */
+        }
+        .btn:hover {
+            background-color: #45a049;
+        }
+        .logout-btn {
+            background-color: #f44336;
+        }
+        .logout-btn:hover {
+            background-color: #e53935;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="lbl_dashboard">管理者ダッシュボード</h1>
+
+        <div class="btn-container">
+            <button class="btn" id="btn_usr_list" onclick="navigateToUserList()">ユーザー一覧</button>
+            <button class="btn" id="btn_comm_manag" onclick="navigateToForumManagement()">コミュニティフォーラム管理</button>
+            <button class="btn logout-btn" id="btn_admin_logout" onclick="logout()">ログアウト</button>
+        </div>
+    </div>
+
+    <script>
+        // ユーザー一覧画面へ遷移
+        function navigateToUserList() {
+            window.location.href = "userlist.html"; // ユーザー一覧画面への遷移
+        }
+
+        // コミュニティフォーラム管理画面へ遷移
+        function navigateToForumManagement() {
+            window.location.href = "forummanagement.html"; // コミュニティフォーラム管理画面への遷移
+        }
+
+        // ログアウトして管理者ログイン画面に遷移
+        function logout() {
+            window.location.href = "adminlogin.html"; // 管理者ログイン画面への遷移
+        }
+    </script>
+</body>
+</html>

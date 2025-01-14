@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>スレッド閲覧</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: row;
+        }
+
+        .sidebar {
+            width: 50px;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 10px 0;
+            border-right: 1px solid #ccc;
+        }
+
+        .arrow-button {
+            width: 30px;
+            height: 30px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px 0;
+            cursor: pointer;
+        }
+
+        .arrow-button:hover {
+            background-color: #bbb;
+        }
+
+        .main {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        .thread {
+            border-bottom: 1px solid #ddd;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+        }
+
+        .header {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .comment {
+            margin-left: 20px;
+            border-left: 2px solid #ddd;
+            padding-left: 10px;
+            margin-bottom: 10px;
+        }
+
+        .footer {
+            margin-top: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .textbox {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+
+        .submit-button {
+            padding: 10px 20px;
+            background-color: #007BFF;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .submit-button:hover {
+            background-color: #0056b3;
+        }
+
+        .back-button {
+            width: 30px;
+            height: 30px;
+            background-color: #ccc;
+            border: none;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+
+        .back-button:hover {
+            background-color: #bbb;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <button class="back-button" onclick="goBack()">←</button>
+        <button class="arrow-button" onclick="scrollToTop()">↑</button>
+        <button class="arrow-button" onclick="scrollToBottom()">↓</button>
+    </div>
+
+    <div class="main">
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">R5秋むずかったね〜</div>
+            <div class="footer">xx時間前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">今回の応用情報どうだった？</div>
+            <div class="footer">xx日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">プログラムの部分が特に難しかった</div>
+            <div class="footer">1日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">来年の目標はセキュスペ合格！</div>
+            <div class="footer">2日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">午後問題で時間足りなかった...</div>
+            <div class="footer">3日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">過去問が役に立った！</div>
+            <div class="footer">5日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">初受験で緊張した</div>
+            <div class="footer">6日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">午前の知識問題が意外とできた！</div>
+            <div class="footer">7日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">午後問題の問1が鬼畜だった</div>
+            <div class="footer">8日前</div>
+        </div>
+
+        <div class="thread">
+            <div class="header">ユーザーID: xxxx/xx/xx</div>
+            <div class="content">次回の試験に向けて勉強中</div>
+            <div class="footer">9日前</div>
+        </div>
+
+        <div class="footer">
+            <textarea class="textbox" placeholder="コメントを追加"></textarea>
+            <button class="submit-button">投稿</button>
+        </div>
+    </div>
+
+    <script>
+        function scrollToTop() {
+            document.querySelector('.main').scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function scrollToBottom() {
+            document.querySelector('.main').scrollTo({ top: document.querySelector('.main').scrollHeight, behavior: 'smooth' });
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>
