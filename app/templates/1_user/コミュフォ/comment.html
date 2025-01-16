@@ -231,82 +231,142 @@
     </style>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            // サーバーからユーザーの報告済みデータを取得し、ボタンを初期化
+            fetch('/api/get_user_report_data/')
+                .then(response => response.json())
+                .then(data => {
+                    const reportedThreads = data.reported_threads || [];
+                    const reportedComments = data.reported_comments || [];
+    
+                    // スレッド報告済みボタンの設定
+                    reportedThreads.forEach(threadId => {
+                        const button = document.querySelector(`.report-thread-btn[data-id="${threadId}"]`);
+                        if (button) {
+                            button.textContent = '報告済み';
+                            button.disabled = true;
+                            button.style.backgroundColor = '#bdc3c7';
+                            button.style.cursor = 'not-allowed';
+                        }
+                    });
+    
+                    // コメント報告済みボタンの設定
+                    reportedComments.forEach(commentId => {
+                        const button = document.querySelector(`.report-comment-button[data-id="${commentId}"]`);
+                        if (button) {
+                            button.textContent = '報告済み';
+                            button.disabled = true;
+                            button.style.backgroundColor = '#bdc3c7';
+                            button.style.cursor = 'not-allowed';
+                        }
+                    });
+                })
+                .catch(error => console.error('エラー:', error));
+    
+            // ポップアップ関連の処理
             const popup = document.getElementById('popup');
             const popupMessage = document.getElementById('popup-message');
             const popupYes = document.getElementById('popup-yes');
             const popupNo = document.getElementById('popup-no');
             let currentAction = null;
-
+            let targetButton = null;
+    
             // ポップアップを開く関数
-            function openPopup(message, action) {
+            function openPopup(message, action, button) {
                 popupMessage.textContent = message;
-                popup.style.display = 'flex';
+                popup.classList.remove('hidden');
                 currentAction = action;
+                targetButton = button;
             }
-
+    
             // ポップアップを閉じる関数
             function closePopup() {
-                popup.style.display = 'none';
+                popup.classList.add('hidden');
                 currentAction = null;
+                targetButton = null;
             }
-
+    
             // 「はい」を押した場合の処理
             popupYes.addEventListener('click', () => {
                 if (typeof currentAction === 'function') {
                     currentAction();
                 }
+                if (targetButton) {
+                    targetButton.textContent = '報告済み';
+                    targetButton.setAttribute('disabled', true);
+                    targetButton.style.backgroundColor = '#bdc3c7';
+                    targetButton.style.cursor = 'not-allowed';
+                }
                 closePopup();
             });
-
+    
             // 「いいえ」を押した場合の処理
             popupNo.addEventListener('click', closePopup);
-
+    
             // スレッド報告ボタンの処理
             const threadReportButton = document.getElementById('report-thread-button');
-            if (threadReportButton) {
+            if (threadReportButton && !threadReportButton.disabled) {
                 threadReportButton.addEventListener('click', () => {
-                    if (threadReportButton.dataset.isReported === 'true') {
-                        openPopup('このスレッドはすでに報告されています。', null);
-                    } else {
-                        openPopup('このスレッドを報告しますか？', () => {
-                            updateButtonState(threadReportButton, 'スレッドは報告済みです', '/report-thread/:id/');
+                    // ボタンを無効化して再クリックを防止
+                    threadReportButton.disabled = true;
+                    openPopup('このスレッドを報告しますか？', () => {
+                        fetch(`/report/thread/${threadReportButton.dataset.id}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                threadReportButton.textContent = '報告済み';
+                                threadReportButton.style.backgroundColor = '#bdc3c7';
+                            } else if (data.status === 'already_reported') {
+                                alert(data.message);
+                            }
+                        })
+                        .catch(error => console.error('エラー:', error))
+                        .finally(() => {
+                            // ここでボタンの状態を元に戻す（処理完了後）
+                            threadReportButton.disabled = false;
                         });
-                    }
+                    }, threadReportButton);
                 });
             }
-
+    
             // コメント報告ボタンの処理
             document.querySelectorAll('.report-comment-button').forEach(button => {
-                button.addEventListener('click', () => {
-                    if (button.dataset.isReported === 'true') {
-                        openPopup('このコメントはすでに報告されています。', null);
-                    } else {
+                if (!button.disabled) {
+                    button.addEventListener('click', () => {
+                        // ボタンを無効化して再クリックを防止
+                        button.disabled = true;
                         openPopup('このコメントを報告しますか？', () => {
-                            updateButtonState(button, 'コメントは報告済みです', '/report-comment/:id/');
-                        });
-                    }
-                });
+                            fetch(`/report/comment/${button.dataset.id}/`, {
+                                method: 'POST',
+                                headers: {
+                                    'X-CSRFToken': '{{ csrf_token }}',
+                                },
+                            })
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.status === 'success') {
+                                    button.textContent = '報告済み';
+                                    button.style.backgroundColor = '#bdc3c7';
+                                } else if (data.status === 'already_reported') {
+                                    alert(data.message);
+                                }
+                            })
+                            .catch(error => console.error('エラー:', error))
+                            .finally(() => {
+                                // ここでボタンの状態を元に戻す（処理完了後）
+                                button.disabled = false;
+                            });
+                        }, button);
+                    });
+                }
             });
-
-            // ボタン状態を更新する共通関数
-            function updateButtonState(button, successMessage, url) {
-                button.setAttribute('disabled', true);
-                button.dataset.isReported = 'true';
-                button.textContent = successMessage;
-                button.style.backgroundColor = '#bdc3c7';
-                button.style.cursor = 'not-allowed';
-
-                // サーバーにリクエストを送信
-                fetch(url.replace(':id', button.dataset.id), {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRFToken': '{{ csrf_token }}',
-                        'Content-Type': 'application/json',
-                    },
-                }).catch(error => console.error('エラー:', error));
-            }
         });
     </script>
+    
 </head>
 <body>
     <div id="popup" class="popup hidden">
@@ -328,31 +388,48 @@
         <div class="back-button-container">
             <a href="{% url 'community_thread' %}" class="back-button">スレッド選択へ戻る</a>
         </div>
-        <div class="report-thread-container">
-            {% if thread.created_by.id != user.id and not thread.is_reported %}
-            <button id="report-thread-button" class="report-thread-btn" data-id="{{ thread.id }}" data-is-reported="{{ thread.is_reported|yesno:'true,false' }}">
-                スレッドを報告
-            </button>
-            {% else %}
-            <p class="report-status">このスレッドはすでに報告されています。</p>
-            {% endif %}
-        </div>
-        {% for comment in comments %}
-        <div class="comment">
-            <div class="comment-header">
-                <strong>{{ forloop.counter|add:1 }}. {{ comment.author.username }}</strong>
-                <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
-            </div>
-            <p>{{ comment.content }}</p>
-            {% if comment.author.id != user.id and not comment.is_reported %}
-            <button class="report-btn report-comment-button" data-id="{{ comment.id }}" data-is-reported="{{ comment.is_reported|yesno:'true,false' }}">
-                コメントを報告
-            </button>
-            {% else %}
-            <p class="report-status">このコメントはすでに報告されています。</p>
-            {% endif %}
-        </div>
-        {% endfor %}
+
+
+
+
+
+<!-- スレッド報告ボタン -->
+<!-- スレッド報告ボタン -->
+<!-- スレッド報告ボタン -->
+<!-- スレッド報告ボタン -->
+<!-- スレッド報告ボタン -->
+<div class="report-thread-container">
+    {% if is_thread_reported %}
+        <button class="report-thread-btn" disabled>報告済み</button>
+    {% else %}
+        <button id="report-thread-button" class="report-thread-btn" data-id="{{ thread.id }}">
+            スレッドを報告
+        </button>
+    {% endif %}
+</div>
+
+{% for comment in comments %}
+<div class="comment">
+    <div class="comment-header">
+        <strong>{{ forloop.counter }}. {{ comment.author.username }}</strong>
+        <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
     </div>
+    <p>{{ comment.content }}</p>
+    {% if comment.is_reported_by_user %}
+        <button class="report-btn" disabled>報告済み</button>
+    {% else %}
+        <button class="report-btn report-comment-button" data-id="{{ comment.id }}">
+            コメントを報告
+        </button>
+    {% endif %}
+</div>
+{% endfor %}
+
+
+        
+
+
+        
+        
 </body>
 </html>

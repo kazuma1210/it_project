@@ -337,3 +337,74 @@ def get_threads_by_category(request):
     } for thread in threads]
 
     return JsonResponse({'threads': thread_list})
+
+
+# レポートアイテム
+def report_item(request, model, report_field, **kwargs):
+    item_id = kwargs.get('comment_id') or kwargs.get('thread_id')
+    print(f"[DEBUG] Request Method: {request.method}, Item ID: {item_id}, Model: {model}, Report Field: {report_field}")
+
+    if request.method == 'POST':
+        try:
+            item = get_object_or_404(model, id=item_id)
+            user_report_data, _ = UserReportData.objects.get_or_create(user=request.user)
+
+            if getattr(user_report_data, f"has_reported_{report_field}")(item_id):
+                print(f"[DEBUG] {report_field.capitalize()} ID {item_id} already reported by User {request.user.id}")
+                return JsonResponse({'error': f'この{report_field}は既に報告されています。'}, status=400)
+
+            getattr(user_report_data, f"add_reported_{report_field}")(item_id)
+            item.report_count += 1
+            item.reported_by_users.add(request.user)
+            item.save()
+            print(f"[DEBUG] Report Successful: {report_field.capitalize()} ID {item_id}, User ID {request.user.id}")
+            return JsonResponse({'success': f'{report_field}を報告しました。'})
+
+        except Exception as e:
+            print(f"[ERROR] Exception in Reporting {report_field.capitalize()} ID {item_id}: {e}")
+            return JsonResponse({'error': '内部エラーが発生しました。'}, status=500)
+
+    print(f"[DEBUG] Invalid Request Method {request.method} for {report_field.capitalize()} ID {item_id}")
+    return JsonResponse({'error': '無効なリクエストです。'}, status=400)
+
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Thread, Comment, UserReportData
+
+def thread_detail(request, thread_id):
+    thread = get_object_or_404(Thread, id=thread_id)
+    comments = thread.comments.all()
+
+    # スレッドが報告済みか確認
+    is_thread_reported = UserReportData.objects.filter(
+        user=request.user,
+        reported_threads_list__contains=str(thread_id)
+    ).exists()
+
+    # 各コメントが報告済みか確認
+    for comment in comments:
+        comment.is_reported_by_user = UserReportData.objects.filter(
+            user=request.user,
+            reported_comments_list__contains=str(comment.id)
+        ).exists()
+
+    return render(request, '1_user/コミュフォ/thread_detail.html', {
+        'thread': thread,
+        'is_thread_reported': is_thread_reported,
+        'comments': comments,
+    })
+
+
+# views.py
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def get_user_report_data(request):
+    user = request.user
+    user_report_data, _ = UserReportData.objects.get_or_create(user=user)
+    return JsonResponse({
+        'reported_threads': user_report_data.get_reported_threads_list(),
+        'reported_comments': user_report_data.get_reported_comments_list(),
+    })
