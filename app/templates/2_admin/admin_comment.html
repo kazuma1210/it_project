@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>コメント管理</title>
+    <style>
+        /* ベーススタイル */
+        body {
+            font-family: 'Roboto', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            padding: 20px;
+            max-width: 800px;
+            margin: auto;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .category-label {
+            background-color: #1abc9c;
+            color: #ffffff;
+            text-align: center;
+            padding: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            border-radius: 4px;
+            margin-bottom: 20px;
+        }
+        
+        .thread-title {
+            margin-bottom: 20px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            font-size: 18px;
+            line-height: 1.5;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        
+        .comments {
+            margin-top: 20px;
+        }
+        
+        .comment {
+            margin-bottom: 15px;
+            padding: 15px;
+            background-color: #ecf0f1;
+            border-radius: 4px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+        }
+        
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .comment-header strong {
+            font-size: 16px;
+        }
+        
+        .comment-header span {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+        
+        .delete-btn {
+            padding: 5px 10px;
+            background-color: #e74c3c;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .delete-btn:hover {
+            background-color: #c0392b;
+        }
+
+        .delete-btn[disabled] {
+            background-color: #bdc3c7;
+            cursor: not-allowed;
+        }
+
+        .back-button-container {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        
+        .back-button {
+            display: inline-block;
+            padding: 10px 20px;
+            background-color: #1abc9c;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .back-button:hover {
+            background-color: #16a085;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="category-label">{{ thread.get_category_display }}</div>
+        <div class="thread-title">
+            <strong>スレッド作成者: {{ thread.created_by.username }}</strong>
+            <p>{{ first_comment.content }}</p>
+            <span style="font-size: 0.9em; color: #7f8c8d;">{{ first_comment.created_at|date:"Y-m-d H:i" }}</span>
+        </div>
+        <div class="back-button-container">
+            <!-- 管理者用のスレッド一覧ページに遷移 -->
+            <a href="{% url 'admin_community_thread' %}" class="back-button">スレッド選択へ戻る</a>
+        </div>
+
+        <!-- コメントリスト -->
+        <div class="comments">
+            {% for comment in comments %}
+            <div class="comment">
+                <div class="comment-header">
+                    <strong>{{ forloop.counter }}. {{ comment.author.username }}</strong>
+                    <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+                </div>
+                <p>{{ comment.content }}</p>
+                <button class="delete-btn" data-id="{{ comment.id }}">コメントを削除</button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // コメント削除ボタンにイベントを追加
+            document.querySelectorAll('.delete-btn').forEach(button => {
+                button.addEventListener('click', () => {
+                    const commentId = button.getAttribute('data-id');
+                    if (confirm('このコメントを削除しますか？')) {
+                        fetch(`/admin/delete_comment/${commentId}/`, {
+                            method: 'POST',
+                            headers: {
+                                'X-CSRFToken': '{{ csrf_token }}',
+                            },
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.status === 'success') {
+                                alert('コメントが削除されました。');
+                                button.closest('.comment').remove();
+                            } else {
+                                alert('コメントの削除に失敗しました。');
+                            }
+                        })
+                        .catch(error => console.error('エラー:', error));
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>

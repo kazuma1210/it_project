@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>管理者ダッシュボード</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+        .dashboard-container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 30px;
+        }
+        .stat {
+            text-align: center;
+            padding: 20px;
+            background-color: #1abc9c;
+            color: white;
+            border-radius: 8px;
+            width: 30%;
+        }
+        .stat h2 {
+            margin: 0;
+            font-size: 24px;
+        }
+        .stat p {
+            margin: 5px 0 0;
+        }
+        .links {
+            display: flex;
+            justify-content: space-around;
+        }
+        .link {
+            padding: 20px;
+            text-align: center;
+            background-color: #3498db;
+            color: white;
+            border-radius: 8px;
+            text-decoration: none;
+            width: 30%;
+        }
+        .link:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <h1>管理者ダッシュボード</h1>
+        <!-- 管理者リンク -->
+        <div class="links">
+            <a href="{% url 'admin_community_thread' %}" class="link">スレッド管理</a>
+            <a href="{% url 'admin_user_list' %}" class="link">ユーザー管理</a>
+        </div>
+    </div>
+</body>
+</html>

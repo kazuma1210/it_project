@@ -201,6 +201,8 @@ def result_analysis(request):
 def community_thread(request):
     threads = Thread.objects.all().prefetch_related('comments').order_by('-updated_at')
     return render(request, '1_user/コミュフォ/community_thread.html', {'threads': threads})
+    threads = Thread.objects.prefetch_related('comments').all()
+    return render(request, 'community_thread.html', {'threads': threads})
 
 # スレッド作成
 def create_thread(request):
@@ -246,6 +248,10 @@ def comment(request, thread_id):
     })
 
 # コメント投稿
+from django.shortcuts import get_object_or_404, redirect
+from django.contrib import messages
+from .models import Thread, Comment
+
 def post_comment(request, thread_id):
     if request.method == 'POST':
         thread = get_object_or_404(Thread, id=thread_id)
@@ -261,6 +267,7 @@ def post_comment(request, thread_id):
             messages.error(request, 'コメント内容を入力してください。')
 
         return redirect('comment', thread_id=thread.id)
+
 
 # --- 管理者関連ビュー ---
 
@@ -408,3 +415,204 @@ def get_user_report_data(request):
         'reported_threads': user_report_data.get_reported_threads_list(),
         'reported_comments': user_report_data.get_reported_comments_list(),
     })
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#-------------------------------------------------------------------------管理者サイド--------------------------------------------------------------------------------------------
+from django.shortcuts import render, redirect
+from django.http import HttpResponseForbidden
+import os
+from decouple import config
+# 管理者の固定IDとパスワード
+ADMIN_CREDENTIALS = {
+    "admin_id": "nikakih",
+    "password": "kazuma0129"
+}
+
+
+
+ALLOWED_IPS = ['127.0.0.1', '192.168.0.1']
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        return x_forwarded_for.split(',')[0]
+    return request.META.get('REMOTE_ADDR')
+
+def admin_login(request):
+    client_ip = get_client_ip(request)
+    if client_ip not in ALLOWED_IPS:
+        return HttpResponseForbidden("アクセスが許可されていません。")
+
+    if request.method == "POST":
+        admin_id = request.POST.get("admin_id")
+        password = request.POST.get("password")
+
+        if admin_id == ADMIN_CREDENTIALS["admin_id"] and password == ADMIN_CREDENTIALS["password"]:
+            request.session['is_admin'] = True
+            return redirect('admin_dashboard')
+
+        error_message = "IDまたはパスワードが間違っています。"
+        return render(request, '2_admin/admin_login.html', {"error_message": error_message})
+
+    return render(request, '2_admin/admin_login.html')
+
+def admin_dashboard(request):
+    if not request.session.get('is_admin'):
+        return redirect('admin_login')
+    return render(request, '2_admin/admin_dashboard.html')
+
+def admin_logout(request):
+    request.session.flush()
+    return redirect('admin_login')
+
+
+from django.shortcuts import render
+from .models import Thread
+
+def admin_community_thread(request):
+    threads = Thread.objects.all()  # すべてのスレッドを取得
+    return render(request, '2_admin/admin_community_thread.html', {'threads': threads})
+
+
+
+from django.shortcuts import render, get_object_or_404
+from .models import Thread, Comment
+
+def admin_comment(request, thread_id):
+    thread = get_object_or_404(Thread, id=thread_id)
+    comments = thread.comments.all()
+    return render(request, '2_admin/admin_comment.html', {'thread': thread, 'comments': comments})
+
+
+from django.shortcuts import render
+
+def admin_user_list(request):
+    # 仮のユーザーリストデータ
+    users = [
+        {'id': 1, 'name': 'ユーザー1', 'email': 'user1@example.com'},
+        {'id': 2, 'name': 'ユーザー2', 'email': 'user2@example.com'},
+    ]
+    return render(request, '2_admin/admin_user_list.html', {'users': users})
+
+from django.shortcuts import render
+from .models import Thread, Comment
+
+def admin_report_list(request):
+    # 報告されたスレッドとコメントを取得
+    reported_threads = Thread.objects.filter(report_count__gt=0)
+    reported_comments = Comment.objects.filter(report_count__gt=0)
+
+    context = {
+        'reported_threads': reported_threads,
+        'reported_comments': reported_comments,
+    }
+    return render(request, '2_admin/admin_report_list.html', context)
+
+
+from django.http import JsonResponse
+from .models import Comment
+
+def delete_comment(request, comment_id):
+    if request.method == 'POST':
+        try:
+            comment = Comment.objects.get(id=comment_id)
+            comment.delete()
+            return JsonResponse({'status': 'success'})
+        except Comment.DoesNotExist:
+            return JsonResponse({'status': 'error', 'message': 'コメントが見つかりませんでした。'})
+    return JsonResponse({'status': 'error', 'message': '無効なリクエストです。'})
+from django.db.models import Count, Q
+
+
+def get_admin_threads(request):
+    sort_by = request.GET.get('sort_by', 'thread_reports')
+
+    if sort_by == 'comment_reports':
+        threads = Thread.objects.annotate(
+            reported_comment_count=Count('comments', filter=Q(comments__is_reported=True))
+        ).order_by('-reported_comment_count')
+    else:
+        threads = Thread.objects.order_by('-report_count')
+
+    thread_list = []
+    for thread in threads:
+        first_comment = thread.comments.first()  # 最初のコメントを取得
+        print(f"[DEBUG] Thread ID: {thread.id}, First Comment: {first_comment}")  # デバッグ出力
+        thread_list.append({
+            'id': thread.id,
+            'created_by': thread.created_by.username,
+            'first_comment': first_comment.content if first_comment else 'コメントなし',
+            'updated_at': thread.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'report_count': thread.report_count,
+            'reported_comment_count': thread.comments.filter(is_reported=True).count(),
+        })
+
+    # ここでデバッグ出力
+    from pprint import pprint
+    pprint(thread_list)
+
+    return JsonResponse({'threads': thread_list})
+
+
+from django.http import JsonResponse
+
+def get_threads_sorted_by_report_count(request):
+    threads = Thread.objects.all().order_by('-report_count')
+    thread_list = [{
+        'id': thread.id,
+        'created_by': thread.created_by.username,
+        'first_comment': thread.comments.first().content if thread.comments.exists() else 'コメントがありません',
+        'last_updated': thread.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'report_count': thread.report_count,
+        'reported_comment_count': thread.comments.filter(is_reported=True).count(),
+    } for thread in threads]
+
+    return JsonResponse({'threads': thread_list})
+
+
+def get_threads_sorted_by_comment_report_count(request):
+    threads = Thread.objects.all()
+    threads = sorted(
+        threads,
+        key=lambda t: t.comments.filter(is_reported=True).count(),
+        reverse=True
+    )
+    thread_list = [{
+        'id': thread.id,
+        'created_by': thread.created_by.username,
+        'first_comment': thread.comments.first().content if thread.comments.exists() else 'コメントがありません',
+        'last_updated': thread.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'report_count': thread.report_count,
+        'reported_comment_count': thread.comments.filter(is_reported=True).count(),
+    } for thread in threads]
+
+    return JsonResponse({'threads': thread_list})
+
+
+
+
+

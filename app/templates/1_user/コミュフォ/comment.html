@@ -399,13 +399,16 @@
 <!-- スレッド報告ボタン -->
 <!-- スレッド報告ボタン -->
 <div class="report-thread-container">
-    {% if is_thread_reported %}
-        <button class="report-thread-btn" disabled>報告済み</button>
-    {% else %}
-        <button id="report-thread-button" class="report-thread-btn" data-id="{{ thread.id }}">
-            スレッドを報告
-        </button>
-    {% endif %}
+    {% if request.user == thread.created_by %}
+    <!-- 自分のスレッドの場合は報告ボタンを非表示 -->
+{% elif is_thread_reported %}
+    <button class="report-thread-btn" disabled>報告済み</button>
+{% else %}
+    <button id="report-thread-button" class="report-thread-btn" data-id="{{ thread.id }}">
+        スレッドを報告
+    </button>
+{% endif %}
+
 </div>
 
 {% for comment in comments %}
@@ -415,16 +418,33 @@
         <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
     </div>
     <p>{{ comment.content }}</p>
-    {% if comment.is_reported_by_user %}
-        <button class="report-btn" disabled>報告済み</button>
-    {% else %}
-        <button class="report-btn report-comment-button" data-id="{{ comment.id }}">
-            コメントを報告
-        </button>
+    {% if request.user == comment.author %}
+    <!-- 自分のコメントの場合は報告ボタンを非表示 -->
+{% elif comment.is_reported_by_user %}
+    <button class="report-btn" disabled>報告済み</button>
+{% else %}
+    <button class="report-btn report-comment-button" data-id="{{ comment.id }}">
+        コメントを報告
+    </button>
+{% endif %}
+
+</div>
+{% endfor %}    <div class="comment-form">
+    <h3>コメントを投稿する</h3>
+    <form method="POST" action="{% url 'post_comment' thread.id %}">
+        {% csrf_token %}
+        <textarea name="comment" placeholder="コメントを入力..." required></textarea>
+        <button type="submit">コメントを投稿</button>
+    </form>
+    {% if messages %}
+    <ul class="messages">
+        {% for message in messages %}
+        <li>{{ message }}</li>
+        {% endfor %}
+    </ul>
     {% endif %}
 </div>
-{% endfor %}
-
+</div>
 
         
 
