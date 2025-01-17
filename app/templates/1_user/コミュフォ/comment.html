@@ -380,75 +380,79 @@
     </div>
     <div class="container">
         <div class="category-label">{{ thread.get_category_display }}</div>
-        <div class="thread-title">
-            <strong>1. スレッド作成者: {{ thread.created_by.username }}</strong>
-            <p>{{ first_comment.content }}</p>
-            <span style="font-size: 0.9em; color: #7f8c8d;">{{ first_comment.created_at|date:"Y-m-d H:i" }}</span>
-        </div>
+    
+        <!-- 1コメント目（first_comment） -->
+        {% if first_comment %}
+            <div class="thread-title">
+                <strong>
+                    1. スレッド作成者: 
+                    <a href="{% url 'other_user_profile' first_comment.author.id %}" style="text-decoration: none; color: #3498db;">
+                        {{ first_comment.author.username }}
+                    </a>
+                </strong>
+                <p>{{ first_comment.content }}</p>
+                <span style="font-size: 0.9em; color: #7f8c8d;">{{ first_comment.created_at|date:"Y-m-d H:i" }}</span>
+            </div>
+        {% endif %}
+    
         <div class="back-button-container">
             <a href="{% url 'community_thread' %}" class="back-button">スレッド選択へ戻る</a>
         </div>
-
-
-
-
-
-<!-- スレッド報告ボタン -->
-<!-- スレッド報告ボタン -->
-<!-- スレッド報告ボタン -->
-<!-- スレッド報告ボタン -->
-<!-- スレッド報告ボタン -->
-<div class="report-thread-container">
-    {% if request.user == thread.created_by %}
-    <!-- 自分のスレッドの場合は報告ボタンを非表示 -->
-{% elif is_thread_reported %}
-    <button class="report-thread-btn" disabled>報告済み</button>
-{% else %}
-    <button id="report-thread-button" class="report-thread-btn" data-id="{{ thread.id }}">
-        スレッドを報告
-    </button>
-{% endif %}
-
-</div>
-
-{% for comment in comments %}
-<div class="comment">
-    <div class="comment-header">
-    <strong>
-        <a href="{% url 'other_user_profile' comment.author.id %}" style="text-decoration: none; color: #3498db;">
-            {{ forloop.counter }}. {{ comment.author.username }}
-        </a>
-    </strong>
-    <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
-</div>
-    <p>{{ comment.content }}</p>
-    {% if request.user == comment.author %}
-    <!-- 自分のコメントの場合は報告ボタンを非表示 -->
-{% elif comment.is_reported_by_user %}
-    <button class="report-btn" disabled>報告済み</button>
-{% else %}
-    <button class="report-btn report-comment-button" data-id="{{ comment.id }}">
-        コメントを報告
-    </button>
-{% endif %}
-
-</div>
-{% endfor %}    <div class="comment-form">
-    <h3>コメントを投稿する</h3>
-    <form method="POST" action="{% url 'post_comment' thread.id %}">
-        {% csrf_token %}
-        <textarea name="comment" placeholder="コメントを入力..." required></textarea>
-        <button type="submit">コメントを投稿</button>
-    </form>
-    {% if messages %}
-    <ul class="messages">
-        {% for message in messages %}
-        <li>{{ message }}</li>
+    
+        <!-- スレッド報告ボタン -->
+        <div class="report-thread-container">
+            {% if request.user == thread.created_by %}
+                <!-- 自分のスレッドの場合は報告ボタンを非表示 -->
+            {% elif is_thread_reported %}
+                <button class="report-thread-btn" disabled>報告済み</button>
+            {% else %}
+                <button id="report-thread-button" class="report-thread-btn" data-id="{{ thread.id }}">
+                    スレッドを報告
+                </button>
+            {% endif %}
+        </div>
+    
+        <!-- コメント一覧 -->
+        {% for comment in comments %}
+            <div class="comment">
+                <div class="comment-header">
+                    <strong>
+                        <a href="{% url 'other_user_profile' comment.author.id %}" style="text-decoration: none; color: #3498db;">
+                            {{ comment.author.username }}
+                        </a>
+                    </strong>
+                    <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+                </div>
+                <p>{{ comment.content }}</p>
+    
+                {% if request.user == comment.author %}
+                    <!-- 自分のコメントの場合は報告ボタンを非表示 -->
+                {% elif comment.is_reported_by_user %}
+                    <button class="report-btn" disabled>報告済み</button>
+                {% else %}
+                    <button class="report-btn report-comment-button" data-id="{{ comment.id }}">
+                        コメントを報告
+                    </button>
+                {% endif %}
+            </div>
         {% endfor %}
-    </ul>
-    {% endif %}
-</div>
-</div>
+    
+        <div class="comment-form">
+            <h3>コメントを投稿する</h3>
+            <form method="POST" action="{% url 'post_comment' thread.id %}">
+                {% csrf_token %}
+                <textarea name="comment" placeholder="コメントを入力..." required></textarea>
+                <button type="submit">コメントを投稿</button>
+            </form>
+            {% if messages %}
+                <ul class="messages">
+                    {% for message in messages %}
+                        <li>{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        </div>
+    </div>
 
         
 

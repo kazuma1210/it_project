@@ -1,9 +1,9 @@
-from django.contrib.auth.models import AbstractUser, Group, Permission
+from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
 from django.db import models
 from django.conf import settings
 import uuid
-from django.contrib.auth.models import BaseUserManager  # 必要なインポートを追加
-
+import json
+from django.contrib.auth.forms import UserCreationForm
     # 実装
 
 
@@ -19,8 +19,7 @@ CATEGORY_CHOICES = [
     ('security', 'セキュリティ'),
 ]
 
-from django.contrib.auth.models import AbstractUser, BaseUserManager, Group, Permission
-from django.db import models
+
 
 class CustomUser(AbstractUser):
     email = models.EmailField(unique=True, max_length=191)  # 必須フィールド
@@ -71,8 +70,8 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(email, username, password, **extra_fields)
 
-from django.contrib.auth.forms import UserCreationForm
-from .models import CustomUser
+
+
 
 class CustomUserCreationForm(UserCreationForm):
     class Meta:
@@ -98,12 +97,6 @@ class Profile(models.Model):
         return self.user.username
 
 # スレッドモデル
-
-from django.db import models
-from django.conf import settings
-import json
-import uuid
-
 
 class Thread(models.Model):
     CATEGORY_CHOICES = [
@@ -139,10 +132,6 @@ class Comment(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     report_count = models.IntegerField(default=0)  # 報告数を記録
     reported_by_users = models.ManyToManyField(settings.AUTH_USER_MODEL, related_name='reported_comments', blank=True)
-
-
-from django.db import models
-from django.conf import settings
 
 class UserReportData(models.Model):
     user = models.OneToOneField(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -183,3 +172,4 @@ class UserReportData(models.Model):
     def has_reported_comment(self, comment_id):
         return comment_id in self.get_reported_comments_list()
 
+from .models import CustomUser

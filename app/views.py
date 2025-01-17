@@ -1,17 +1,19 @@
-from django.shortcuts import render, redirect, get_object_or_404
-from django.contrib.auth import authenticate, login, logout
-from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout, get_user_model
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth import get_user_model
-from django.http import JsonResponse, HttpResponse
-from django.urls import reverse
-from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.hashers import make_password
 from django.core.mail import send_mail
+from django.db.models import Count, Q
+from django.http import JsonResponse, HttpResponse
+from django.shortcuts import render, redirect, get_object_or_404
+from django.urls import reverse
+from django.views.decorators.csrf import csrf_exempt
 import random
-
-from .models import Profile, Thread, Comment
+from pprint import pprint
+from django.contrib import messages
+from .models import Profile, Thread, Comment, UserReportData
 from .forms import CustomUserCreationForm, CommentForm
+from decouple import config
+import os
 
 # カスタムユーザーモデルを使用
 User = get_user_model()
@@ -31,18 +33,7 @@ def remove_duplicate_messages(request):
     storage._loaded_data = unique_messages
     storage.used = False
 
-# パスワードリセット例
-# (開発用。運用時には使用しないこと)
-def reset_password_example():
-    try:
-        user = User.objects.get(email='craft20041210@gmail.com')
-        user.set_password('kazuma0129')
-        user.save()
-        print("パスワードが正しくリセットされました。")
-    except User.DoesNotExist:
-        print("指定されたユーザーは存在しません。")
-
-# --- ユーザー関連ビュー ---
+# -------------------------------------------------------------- ユーザー関連ビュー -----------------------------------------------------------------------------------------------
 
 # ホーム画面
 def home(request):
@@ -57,30 +48,48 @@ def register(request):
     if request.method == 'POST':
         form = CustomUserCreationForm(request.POST)
         if form.is_valid():
-            request.session['username'] = form.cleaned_data['username']
-            request.session['email'] = form.cleaned_data['email']
-            request.session['password'] = form.cleaned_data['password1']
+            # ユーザーを作成
+            username = form.cleaned_data['username']
+            email = form.cleaned_data['email']
+            password = form.cleaned_data['password1']
 
+            # ユーザー作成
+            user = User.objects.create_user(username=username, email=email, password=password)
+            user.save()
+
+            # 認証コードの生成
             verification_code = random.randint(1000, 9999)
             request.session['verification_code'] = verification_code
+            request.session['email'] = email  # セッションにメールアドレスを保存
 
+            # 認証コードを送信
             send_mail(
                 '認証コードのお知らせ',
                 f'以下の認証コードを入力してください: {verification_code}',
                 'info001@meltfire.net',
-                [form.cleaned_data['email']],
+                [email],
                 fail_silently=False,
             )
 
             messages.success(request, '認証コードを送信しました。メールをご確認ください。')
             return redirect('verify_email')
         else:
+            # フォームエラーがあれば、エラーを表示
+            print(form.errors)  # エラー内容をコンソールに出力
             messages.error(request, '入力内容に誤りがあります。')
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
 
-    return render(request, '1_user/新規登録/register.html')
+    else:
+        form = CustomUserCreationForm()  # GETリクエスト時の空フォーム
+
+    return render(request, '1_user/新規登録/register.html', {'form': form})
 
 # 認証コードの検証
 def verify_email(request):
+    from_reset_flow = request.session.get('from_reset_flow', False)
+    
     if request.method == 'POST':
         code = request.POST.get('code')
         session_code = request.session.get('verification_code')
@@ -90,13 +99,20 @@ def verify_email(request):
             messages.error(request, '認証コードが間違っています。')
             return redirect('verify_email')
 
+        # メールアドレスでユーザーを検索
         user = User.objects.filter(email=email).first()
+
         if not user:
-            user = User.objects.create_user(email=email, password='temporary_password')
+            username = email.split('@')[0]  # メールアドレスの「@」前をusernameに使う
+            user = User.objects.create_user(username=username, email=email, password='temporary_password')
             user.save()
 
         messages.success(request, '認証が成功しました。新しいパスワードを設定してください。')
-        return redirect('reset_password')
+
+        if from_reset_flow:
+            return redirect('reset_password')
+        else:
+            return redirect('login')  # 新規登録から来た場合はログインに遷移
 
     return render(request, '1_user/新規登録/verify_email.html')
 
@@ -122,10 +138,13 @@ def password_reset_email(request):
             fail_silently=False,
         )
 
+        request.session['from_reset_flow'] = True
+
         messages.success(request, '認証コードを送信しました。メールをご確認ください。')
         return redirect('verify_email')
 
     return render(request, '1_user/ログイン_ログアウト/password_reset_email.html')
+
 
 def reset_password(request):
     if request.method == 'POST':
@@ -153,17 +172,21 @@ def login_view(request):
         email = request.POST.get('email')
         password = request.POST.get('password')
         try:
-            user_obj = User.objects.get(email=email)
-            user = authenticate(request, username=user_obj.username, password=password)
-            if user is not None:
-                login(request, user)
-                messages.success(request, 'ログインに成功しました！')
-                return redirect('home')
+            user_obj = User.objects.filter(email=email).first()
+            if user_obj is not None:
+                user = authenticate(request, username=user_obj.username, password=password)
+                if user is not None:
+                    login(request, user)
+                    messages.success(request, 'ログインに成功しました！')
+                    return redirect('home')
+                else:
+                    messages.error(request, 'メールアドレスまたはパスワードが正しくありません。')
             else:
-                messages.error(request, 'メールアドレスまたはパスワードが正しくありません。')
-        except User.DoesNotExist:
-            messages.error(request, 'このメールアドレスは登録されていません。')
+                messages.error(request, 'このメールアドレスは登録されていません。')
 
+        except Exception as e:
+            messages.error(request, f"エラーが発生しました: {str(e)}")
+    
     return render(request, '1_user/ログイン_ログアウト/login.html')
 
 # ログアウト処理
@@ -195,14 +218,12 @@ def self_analysis(request):
 def result_analysis(request):
     return render(request, '1_user/自己分析/result_analysis.html')
 
-# --- コミュニティ関連ビュー ---
+# ---------------------------------------------- コミュニティフォーラムビュー -------------------------------------------------------------------------
 
 # スレッド一覧表示
 def community_thread(request):
     threads = Thread.objects.all().prefetch_related('comments').order_by('-updated_at')
     return render(request, '1_user/コミュフォ/community_thread.html', {'threads': threads})
-    threads = Thread.objects.prefetch_related('comments').all()
-    return render(request, 'community_thread.html', {'threads': threads})
 
 # スレッド作成
 def create_thread(request):
@@ -248,10 +269,6 @@ def comment(request, thread_id):
     })
 
 # コメント投稿
-from django.shortcuts import get_object_or_404, redirect
-from django.contrib import messages
-from .models import Thread, Comment
-
 def post_comment(request, thread_id):
     if request.method == 'POST':
         thread = get_object_or_404(Thread, id=thread_id)
@@ -267,25 +284,6 @@ def post_comment(request, thread_id):
             messages.error(request, 'コメント内容を入力してください。')
 
         return redirect('comment', thread_id=thread.id)
-
-
-# --- 管理者関連ビュー ---
-
-# 管理者ダッシュボード
-def admin_dashboard(request):
-    return render(request, '2_admin/1_ホームログイン/admindashboard.html')
-
-# 管理者ログイン
-def admin_login(request):
-    return render(request, '2_admin/1_ホームログイン/adminlogin.html')
-
-# ユーザーリスト管理
-def user_list(request):
-    return render(request, '2_admin/ユーザー管理/user_list.html')
-
-# スレッド詳細（管理者用）
-def thread_view(request):
-    return render(request, '2_admin/コミュフォ/thread_view.html')
 
 # プロフィール保存処理
 def save_profile(request):
@@ -346,7 +344,7 @@ def get_threads_by_category(request):
     return JsonResponse({'threads': thread_list})
 
 
-# レポートアイテム
+# レポート機能
 def report_item(request, model, report_field, **kwargs):
     item_id = kwargs.get('comment_id') or kwargs.get('thread_id')
     print(f"[DEBUG] Request Method: {request.method}, Item ID: {item_id}, Model: {model}, Report Field: {report_field}")
@@ -374,11 +372,7 @@ def report_item(request, model, report_field, **kwargs):
     print(f"[DEBUG] Invalid Request Method {request.method} for {report_field.capitalize()} ID {item_id}")
     return JsonResponse({'error': '無効なリクエストです。'}, status=400)
 
-
-
-from django.shortcuts import render, get_object_or_404
-from .models import Thread, Comment, UserReportData
-
+#報告済み判定
 def thread_detail(request, thread_id):
     thread = get_object_or_404(Thread, id=thread_id)
     comments = thread.comments.all()
@@ -404,8 +398,7 @@ def thread_detail(request, thread_id):
 
 
 # views.py
-from django.http import JsonResponse
-from django.contrib.auth.decorators import login_required
+
 
 @login_required
 def get_user_report_data(request):
@@ -416,7 +409,7 @@ def get_user_report_data(request):
         'reported_comments': user_report_data.get_reported_comments_list(),
     })
 
-#--------------------------------------------自己分析----------------------------------------------------------
+
 def comment(request, thread_id):
     thread = get_object_or_404(Thread, id=thread_id)
 
@@ -454,24 +447,6 @@ def post_comment(request, thread_id):
 
         return redirect('comment', thread_id=thread.id)
 
-# 管理者用ダッシュボード
-@login_required
-def admin_dashboard(request):
-    return render(request, '2_admin/1_ホームログイン/admindashboard.html')
-
-# 管理者ログイン
-def admin_login(request):
-    return render(request, '2_admin/1_ホームログイン/adminlogin.html')
-
-# ユーザーリスト管理
-@login_required
-def user_list(request):
-    return render(request, '2_admin/ユーザー管理/user_list.html')
-
-# スレッドの詳細画面（管理者用）
-@login_required
-def thread_view(request):
-    return render(request, '2_admin/コミュフォ/thread_view.html')
 
 # プロフィール保存処理（個別関数）
 @login_required
@@ -488,9 +463,6 @@ def save_profile(request):
 
 
 @csrf_exempt
-
-
-@csrf_exempt
 def report_thread(request, thread_id):
     if request.method == 'POST':
         try:
@@ -502,9 +474,8 @@ def report_thread(request, thread_id):
             return JsonResponse({'success': False, 'error': 'スレッドが見つかりませんでした。'}, status=404)
     return JsonResponse({'success': False, 'error': '無効なリクエストです。'}, status=400)
 
-from .models import Comment
 
-@csrf_exempt
+
 def report_comment(request, comment_id):
     if request.method == 'POST':
         try:
@@ -516,13 +487,6 @@ def report_comment(request, comment_id):
             return JsonResponse({'success': False, 'error': 'コメントが見つかりませんでした。'}, status=404)
     return JsonResponse({'success': False, 'error': '無効なリクエストです。'}, status=400)
 
-from django.http import JsonResponse
-from .models import Thread
-
-from django.http import JsonResponse
-
-from django.http import JsonResponse
-from .models import Thread
 
 def get_threads_by_category(request):
     # クエリパラメータからカテゴリを取得
@@ -561,9 +525,7 @@ def get_threads_by_category(request):
 
     return JsonResponse({'threads': thread_list})
 
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth import get_user_model
-from .models import Profile
+
 
 User = get_user_model()
 
@@ -580,14 +542,23 @@ def other_user_profile(request, user_id):
     })
 
 
+@login_required
+def delete_account(request):
+    if request.method == 'POST':
+        # 現在ログインしているユーザーを取得
+        user = request.user
+        # ユーザーのアカウントを削除
+        user.delete()
+
+        return JsonResponse({'success': True})
+
+    return JsonResponse({'success': False}, status=400)
 
 
 
 
-#kouhei
+#--------------------------------------------自己分析----------------------------------------------------------
 
-
-from django.shortcuts import render
 
 # 辞書データ
 QUALIFICATIONS = [
@@ -642,6 +613,7 @@ QUALIFICATIONS = [
 ]
 
 
+
 def suggest_qualifications(request):
     if request.method == "POST":
         strengths = request.POST.getlist("strengths")
@@ -678,7 +650,6 @@ def suggest_qualifications(request):
 
 
 
-
 def self_analysis(request):
     # カテゴリごとに資格をグループ化
     qualifications_by_category = {}
@@ -691,6 +662,8 @@ def self_analysis(request):
     return render(request, "1_user/自己分析/self_analysis.html", {
         "qualifications_by_category": qualifications_by_category
     })
+
+
 
 def result_analysis(request):
     user_data = request.POST
@@ -762,10 +735,7 @@ def calculate_match_score(qualification, strengths, weaknesses, achieved_certifi
         return "E"
 
 #-------------------------------------------------------------------------管理者サイド--------------------------------------------------------------------------------------------
-from django.shortcuts import render, redirect
-from django.http import HttpResponseForbidden
-import os
-from decouple import config
+
 # 管理者の固定IDとパスワード
 ADMIN_CREDENTIALS = {
     "admin_id": "nikakih",
@@ -810,8 +780,7 @@ def admin_logout(request):
     return redirect('admin_login')
 
 
-from django.shortcuts import render
-from .models import Thread
+
 
 def admin_community_thread(request):
     threads = Thread.objects.all()  # すべてのスレッドを取得
@@ -819,8 +788,7 @@ def admin_community_thread(request):
 
 
 
-from django.shortcuts import render, get_object_or_404
-from .models import Thread, Comment
+
 
 def admin_comment(request, thread_id):
     thread = get_object_or_404(Thread, id=thread_id)
@@ -828,7 +796,7 @@ def admin_comment(request, thread_id):
     return render(request, '2_admin/admin_comment.html', {'thread': thread, 'comments': comments})
 
 
-from django.shortcuts import render
+
 
 def admin_user_list(request):
     # 仮のユーザーリストデータ
@@ -838,8 +806,7 @@ def admin_user_list(request):
     ]
     return render(request, '2_admin/admin_user_list.html', {'users': users})
 
-from django.shortcuts import render
-from .models import Thread, Comment
+
 
 def admin_report_list(request):
     # 報告されたスレッドとコメントを取得
@@ -853,8 +820,6 @@ def admin_report_list(request):
     return render(request, '2_admin/admin_report_list.html', context)
 
 
-from django.http import JsonResponse
-from .models import Comment
 
 def delete_comment(request, comment_id):
     if request.method == 'POST':
@@ -865,7 +830,7 @@ def delete_comment(request, comment_id):
         except Comment.DoesNotExist:
             return JsonResponse({'status': 'error', 'message': 'コメントが見つかりませんでした。'})
     return JsonResponse({'status': 'error', 'message': '無効なリクエストです。'})
-from django.db.models import Count, Q
+
 
 
 def get_admin_threads(request):
@@ -892,13 +857,13 @@ def get_admin_threads(request):
         })
 
     # ここでデバッグ出力
-    from pprint import pprint
+    
     pprint(thread_list)
 
     return JsonResponse({'threads': thread_list})
 
 
-from django.http import JsonResponse
+
 
 def get_threads_sorted_by_report_count(request):
     threads = Thread.objects.all().order_by('-report_count')

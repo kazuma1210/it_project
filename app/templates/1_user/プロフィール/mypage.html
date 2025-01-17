@@ -157,6 +157,28 @@
       background-color: rgba(0, 0, 0, 0.5);
       z-index: 999;
     }
+    .delete-btn {
+      background-color: #e74c3c;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s ease;
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+    }
+    
+    .delete-btn:hover {
+      background-color: #c0392b;
+    }
+    
+    .delete-btn:active {
+      background-color: #a93226;
+    }
+    
   </style>
 </head>
 <body>
@@ -208,10 +230,56 @@
       </div>
 
       <button type="submit">保存</button>
+      <button type="button" id="delete-account-btn" class="delete-btn">アカウントを削除</button>
+      <div class="popup-overlay" id="delete-popup-overlay"></div>
+<div class="popup" id="delete-account-popup">
+  <p>アカウントを削除しますか？投稿したスレッドやコメントは削除されません。</p>
+  <button type="button" id="confirm-delete" onclick="deleteAccount()">はい</button>
+  <button type="button" onclick="closeDeletePopup()">いいえ</button>
+</div>
+
     </form>
   </div>
 
   <script>
+    document.getElementById('delete-account-btn').onclick = function() {
+      document.getElementById('delete-popup-overlay').style.display = 'block';
+      document.getElementById('delete-account-popup').style.display = 'block';
+    };
+    
+    function closeDeletePopup() {
+      document.getElementById('delete-popup-overlay').style.display = 'none';
+      document.getElementById('delete-account-popup').style.display = 'none';
+    }
+    
+    function deleteAccount() {
+      // ユーザーアカウントの削除処理
+      fetch('/delete-account/', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+          'action': 'delete'
+        })
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data.success) {
+          // アカウント削除成功時の処理
+          alert('アカウントが削除されました。');
+          window.location.href = '/logout/'; // ログアウトしてトップページへ
+        } else {
+          alert('アカウント削除に失敗しました。');
+        }
+      })
+      .catch(error => {
+        alert('アカウント削除に失敗しました。');
+        console.error('Error:', error);
+      });
+    }
+    
     function closePopup() {
       document.getElementById('popup-overlay').style.display = 'none';
       document.getElementById('save-popup').style.display = 'none';

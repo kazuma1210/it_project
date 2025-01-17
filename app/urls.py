@@ -59,7 +59,7 @@ urlpatterns = [
     path('self_analysis/', views.self_analysis, name='self_analysis'),
     path('result_analysis/', views.result_analysis, name='result_analysis'),
     path('submit_analysis/', views.suggest_qualifications, name='submit_analysis'),
-
+    path('delete-account/', views.delete_account, name='delete_account'),
 
 #------------------------------管理者サイド------------------------------------
     path('custom-admin/login/', views.admin_login, name='admin_login'),

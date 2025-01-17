@@ -1,9 +1,10 @@
 import pymysql
+pymysql.install_as_MySQLdb()
+
 from pathlib import Path
 import os
 
 # MySQLdb を使用するための設定
-pymysql.install_as_MySQLdb()
 
 # プロジェクトの基本ディレクトリ
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -124,6 +125,14 @@ AUTH_USER_MODEL = 'auth.User'
 
 DEFAULT_INDEX_LENGTH = 191
 
+# 静的ファイルの収集先
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-ALLOWED_HOSTS = ['nikakih.pythonanywhere.com']
+# 追加で静的ファイルを配置する場所
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'static'),  # 例: プロジェクト内の "static" フォルダ
+]
+
+
+ALLOWED_HOSTS = ['*']
+
