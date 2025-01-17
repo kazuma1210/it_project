@@ -124,4 +124,6 @@ AUTH_USER_MODEL = 'auth.User'
 
 DEFAULT_INDEX_LENGTH = 191
 
-STATIC_ROOT = BASE_DIR / 'staticfiles'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+ALLOWED_HOSTS = ['nikakih.pythonanywhere.com']
