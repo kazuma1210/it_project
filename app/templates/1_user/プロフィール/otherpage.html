@@ -1,0 +1,125 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>プロフィール</title>
+  <style>
+    /* 全体のスタイル */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      background-color: #ffffff;
+      width: 100%;
+      max-width: 1000px;
+      padding: 40px;
+      border-radius: 15px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease-in-out;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 25px;
+    }
+
+    h1 {
+      color: #2c3e50;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    button {
+      background-color: #3498db;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 18px;
+      transition: background-color 0.3s ease;
+      box-shadow: 0 4px 12px rgba(52, 152, 219, 0.2);
+    }
+
+    button:hover {
+      background-color: #2980b9;
+    }
+
+    button:active {
+      background-color: #2471a3;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.15);
+    }
+
+    .profile {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .details .section {
+      margin-bottom: 30px;
+    }
+
+    .details input {
+      width: 100%;
+      padding: 14px 18px;
+      border: 2px solid #ddd;
+      border-radius: 12px;
+      font-size: 16px;
+      background-color: #f4f6f9;
+      color: #2c3e50;
+      transition: border 0.3s ease;
+      pointer-events: none;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>プロフィール</h1>
+      <button onclick="location.href='{% url 'community_thread' %}'">スレッドに戻る</button>
+    </div>
+
+    <div class="profile">
+      <div class="details">
+        <div class="section">
+          <label>ユーザーID</label>
+          <input type="text" value="{{ profile_user.username }}" readonly>
+        </div>
+        <div class="section">
+          <label>自己紹介</label>
+          <input type="text" value="{{ profile.self_intro|default:'自己紹介が設定されていません。' }}" readonly>
+        </div>
+        <div class="section">
+          <label>現在の職種または学科</label>
+          <input type="text" value="{{ profile.current_position|default:'未設定' }}" readonly>
+        </div>
+        <div class="section">
+          <label>取得資格</label>
+          <input type="text" value="{{ profile.qualifications|default:'未設定' }}" readonly>
+        </div>
+        <div class="section">
+          <label>目標資格</label>
+          <input type="text" value="{{ profile.target_qualifications|default:'未設定' }}" readonly>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

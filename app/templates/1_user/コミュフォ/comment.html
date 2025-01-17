@@ -414,9 +414,13 @@
 {% for comment in comments %}
 <div class="comment">
     <div class="comment-header">
-        <strong>{{ forloop.counter }}. {{ comment.author.username }}</strong>
-        <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
-    </div>
+    <strong>
+        <a href="{% url 'other_user_profile' comment.author.id %}" style="text-decoration: none; color: #3498db;">
+            {{ forloop.counter }}. {{ comment.author.username }}
+        </a>
+    </strong>
+    <span>{{ comment.created_at|date:"Y-m-d H:i" }}</span>
+</div>
     <p>{{ comment.content }}</p>
     {% if request.user == comment.author %}
     <!-- 自分のコメントの場合は報告ボタンを非表示 -->

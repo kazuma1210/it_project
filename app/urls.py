@@ -52,8 +52,7 @@ urlpatterns = [
     ),
     path('api/get_user_report_data/', views.get_user_report_data, name='get_user_report_data'),
 
-
-
+    path('profile/<int:user_id>/', views.other_user_profile, name='other_user_profile'),
 
 
 

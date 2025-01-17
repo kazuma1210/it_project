@@ -123,3 +123,5 @@ AUTH_USER_MODEL = 'app.CustomUser'
 AUTH_USER_MODEL = 'auth.User'
 
 DEFAULT_INDEX_LENGTH = 191
+
+STATIC_ROOT = BASE_DIR / 'staticfiles'

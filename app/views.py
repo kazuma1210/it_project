@@ -561,6 +561,23 @@ def get_threads_by_category(request):
 
     return JsonResponse({'threads': thread_list})
 
+from django.shortcuts import render, get_object_or_404
+from django.contrib.auth import get_user_model
+from .models import Profile
+
+User = get_user_model()
+
+def other_user_profile(request, user_id):
+    # ユーザーを取得
+    user = get_object_or_404(User, id=user_id)
+    
+    # プロフィールを取得、存在しない場合は作成
+    profile, created = Profile.objects.get_or_create(user=user)
+
+    return render(request, '1_user/プロフィール/otherpage.html', {
+        'profile_user': user,
+        'profile': profile,
+    })
 
 
 
