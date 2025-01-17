@@ -416,6 +416,150 @@ def get_user_report_data(request):
         'reported_comments': user_report_data.get_reported_comments_list(),
     })
 
+#--------------------------------------------自己分析----------------------------------------------------------
+def comment(request, thread_id):
+    thread = get_object_or_404(Thread, id=thread_id)
+
+    # CATEGORY_CHOICESから日本語ラベルを取得
+    category_display = dict(Thread.CATEGORY_CHOICES).get(thread.category, thread.category)
+
+    comments = thread.comments.all().order_by('created_at')
+    first_comment = comments.first() if comments.exists() else None
+    other_comments = comments[1:] if comments.count() > 1 else []
+
+    return render(request, '1_user/コミュフォ/comment.html', {
+        'thread': thread,
+        'category_display': category_display,  # 日本語ラベルを渡す
+        'first_comment': first_comment,
+        'comments': other_comments
+    })
+
+
+
+# コメント投稿
+@login_required
+def post_comment(request, thread_id):
+    if request.method == 'POST':
+        thread = get_object_or_404(Thread, id=thread_id)
+        content = request.POST.get('comment')
+
+        if content:
+            Comment.objects.create(
+                thread=thread,
+                author=request.user,
+                content=content,
+            )
+        else:
+            messages.error(request, 'コメント内容を入力してください。')
+
+        return redirect('comment', thread_id=thread.id)
+
+# 管理者用ダッシュボード
+@login_required
+def admin_dashboard(request):
+    return render(request, '2_admin/1_ホームログイン/admindashboard.html')
+
+# 管理者ログイン
+def admin_login(request):
+    return render(request, '2_admin/1_ホームログイン/adminlogin.html')
+
+# ユーザーリスト管理
+@login_required
+def user_list(request):
+    return render(request, '2_admin/ユーザー管理/user_list.html')
+
+# スレッドの詳細画面（管理者用）
+@login_required
+def thread_view(request):
+    return render(request, '2_admin/コミュフォ/thread_view.html')
+
+# プロフィール保存処理（個別関数）
+@login_required
+def save_profile(request):
+    if request.method == 'POST':
+        profile, created = Profile.objects.get_or_create(user=request.user)
+        profile.self_intro = request.POST.get('self_intro', '')
+        profile.current_position = request.POST.get('current_position', '')
+        profile.qualifications = request.POST.get('qualifications', '')
+        profile.target_qualifications = request.POST.get('target_qualifications', '')
+        profile.save()
+        messages.success(request, 'プロフィールが保存されました。')
+    return redirect('mypage')
+
+
+@csrf_exempt
+
+
+@csrf_exempt
+def report_thread(request, thread_id):
+    if request.method == 'POST':
+        try:
+            thread = Thread.objects.get(id=thread_id)
+            thread.report_count += 1
+            thread.save()
+            return JsonResponse({'success': True, 'message': 'スレッドが報告されました。'})
+        except Thread.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'スレッドが見つかりませんでした。'}, status=404)
+    return JsonResponse({'success': False, 'error': '無効なリクエストです。'}, status=400)
+
+from .models import Comment
+
+@csrf_exempt
+def report_comment(request, comment_id):
+    if request.method == 'POST':
+        try:
+            comment = Comment.objects.get(id=comment_id)
+            comment.is_reported = True
+            comment.save()
+            return JsonResponse({'success': True, 'message': 'コメントが報告されました。'})
+        except Comment.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'コメントが見つかりませんでした。'}, status=404)
+    return JsonResponse({'success': False, 'error': '無効なリクエストです。'}, status=400)
+
+from django.http import JsonResponse
+from .models import Thread
+
+from django.http import JsonResponse
+
+from django.http import JsonResponse
+from .models import Thread
+
+def get_threads_by_category(request):
+    # クエリパラメータからカテゴリを取得
+    category = request.GET.get('category', None)
+    print(f"受信カテゴリ: {category}")
+
+    # カテゴリマッピング（英語 -> 日本語）
+    category_map = dict(Thread.CATEGORY_CHOICES)
+    category_jp = category_map.get(category)  # 英語を日本語に変換
+
+    # カテゴリバリデーション
+    if category and not category_jp:
+        print(f"無効なカテゴリが指定されました: {category}")
+        return JsonResponse({'error': '無効なカテゴリです'}, status=400)
+
+    # スレッドを取得
+    if category_jp:
+        threads = Thread.objects.filter(category=category_jp).order_by('-updated_at')
+    else:
+        threads = Thread.objects.all().order_by('-updated_at')
+
+    print(f"取得されたスレッド数: {threads.count()}")
+    print(f"取得されたスレッドデータ: {threads}")
+
+    # スレッドリストを作成
+    thread_list = [{
+        'id': thread.id,
+        'category': thread.category,
+        'created_by': thread.created_by.username,
+        'first_comment': thread.comments.first().content if thread.comments.exists() else 'コメントがありません',
+        'last_updated': thread.updated_at.strftime('%Y-%m-%d %H:%M:%S'),
+        'comment_count': thread.comments.count(),
+    } for thread in threads]
+
+    print(f"レスポンスデータ: {thread_list}")
+
+    return JsonResponse({'threads': thread_list})
 
 
 
@@ -423,23 +567,182 @@ def get_user_report_data(request):
 
 
 
+#kouhei
+
+
+from django.shortcuts import render
+
+# 辞書データ
+QUALIFICATIONS = [
+    {"name": "ITパスポート", "level": 1, "categories": ["一般技術"]},
+    {"name": "基本情報技術者", "level": 2, "categories": ["プログラミング", "データベース"]},
+    {"name": "応用情報技術者", "level": 5, "categories": ["高度技術", "セキュリティ"]},
+    {"name": "情報処理安全確保支援士", "level": 8, "categories": ["セキュリティ"]},
+    {"name": "AWS認定ソリューションアーキテクト", "level": 6, "categories": ["ネットワーク", "高度技術"]},
+    {"name": "Microsoft Azure Fundamentals", "level": 3, "categories": ["一般技術"]},
+    {"name": "データベーススペシャリスト", "level": 7, "categories": ["データベース"]},
+    {"name": "ネットワークスペシャリスト", "level": 7, "categories": ["ネットワーク"]},
+    {"name": "情報セキュリティマネジメント", "level": 4, "categories": ["セキュリティ", "マネジメント"]},
+    {"name": "CompTIA Security+", "level": 4, "categories": ["セキュリティ"]},
+    {"name": "Linux Professional Institute 認定資格", "level": 3, "categories": ["高度技術"]},
+    {"name": "Pythonエンジニア認定試験", "level": 2, "categories": ["プログラミング"]},
+    {"name": "Javaプログラマー認定資格", "level": 3, "categories": ["プログラミング"]},
+    {"name": "Oracle認定Javaプログラマ", "level": 4, "categories": ["プログラミング"]},
+    {"name": "AWS認定デベロッパー", "level": 5, "categories": ["ネットワーク", "プログラミング"]},
+    {"name": "Cisco CCNA", "level": 4, "categories": ["ネットワーク"]},
+    {"name": "Cisco CCNP", "level": 6, "categories": ["ネットワーク"]},
+    {"name": "Google Associate Cloud Engineer", "level": 4, "categories": ["高度技術"]},
+    {"name": "Google Professional Data Engineer", "level": 7, "categories": ["高度技術", "データベース"]},
+    {"name": "ITILファンデーション", "level": 3, "categories": ["マネジメント"]},
+    {"name": "プロジェクトマネージャ", "level": 8, "categories": ["マネジメント", "高度技術"]},
+    {"name": "システムアーキテクト", "level": 7, "categories": ["高度技術", "マネジメント"]},
+    {"name": "技術士（情報工学）", "level": 8, "categories": ["高度技術", "マネジメント"]},
+    {"name": "ディープラーニング資格", "level": 6, "categories": ["高度技術"]},
+    {"name": "Python Machine Learning Engineer", "level": 6, "categories": ["プログラミング"]},
+    {"name": "Google Cloud Professional Machine Learning Engineer", "level": 7, "categories": ["高度技術"]},
+    {"name": "データ分析スペシャリスト", "level": 5, "categories": ["データベース"]},
+    {"name": "RPA技術者検定", "level": 3, "categories": ["プログラミング"]},
+    {"name": "IoTシステムエキスパート", "level": 6, "categories": ["ネットワーク", "高度技術"]},
+    {"name": "アジャイル開発認定試験", "level": 4, "categories": ["マネジメント", "プログラミング"]},
+    {"name": "Microsoft Power BI Analyst", "level": 4, "categories": ["データベース"]},
+    {"name": "Kubernetes Certified Administrator", "level": 7, "categories": ["高度技術"]},
+    {"name": "Docker Certified Associate", "level": 5, "categories": ["高度技術"]},
+    {"name": "Elastic Certified Engineer", "level": 6, "categories": ["データベース", "高度技術"]},
+    {"name": "SAP認定資格", "level": 5, "categories": ["マネジメント"]},
+    {"name": "Salesforce認定アドミニストレーター", "level": 4, "categories": ["マネジメント"]},
+    {"name": "Tableau認定試験", "level": 4, "categories": ["データベース"]},
+    {"name": "Blender Certified Professional", "level": 3, "categories": ["高度技術"]},
+    {"name": "Unity認定開発者", "level": 5, "categories": ["プログラミング"]},
+    {"name": "VR技術者認定試験", "level": 5, "categories": ["高度技術"]},
+    {"name": "FPGAデザイナー認定資格", "level": 6, "categories": ["高度技術"]},
+    {"name": "Embedded Linux Engineer", "level": 5, "categories": ["高度技術"]},
+    {"name": "情報通信エンジニア", "level": 4, "categories": ["ネットワーク", "高度技術"]},
+    {"name": "クラウドセキュリティスペシャリスト", "level": 6, "categories": ["セキュリティ", "高度技術"]},
+    {"name": "認定AIエンジニア", "level": 7, "categories": ["高度技術"]},
+    {"name": "IoTプログラマー", "level": 5, "categories": ["ネットワーク", "プログラミング"]},
+    {"name": "スクラムマスター認定試験", "level": 4, "categories": ["マネジメント"]},
+    {"name": "Google Cloud DevOps Engineer", "level": 7, "categories": ["高度技術"]},
+]
+
+
+def suggest_qualifications(request):
+    if request.method == "POST":
+        strengths = request.POST.getlist("strengths")
+        weaknesses = request.POST.getlist("weaknesses")
+        achieved = request.POST.getlist("achieved_certifications")
+        target_level = request.POST.get("target_level")
+
+        suggestions = []
+        for qualification in QUALIFICATIONS:
+            score = 0
+            if any(category in strengths for category in qualification["categories"]):
+                score += 10
+            if any(category in weaknesses for category in qualification["categories"]):
+                score -= 5
+            if target_level and qualification["level"] <= int(target_level):
+                score += 5
+            if qualification["name"] in achieved:
+                continue
+            if score > 0:
+                suggestions.append({"qualification": qualification, "score": score})
+
+        suggestions = sorted(suggestions, key=lambda x: x["score"], reverse=True)
+
+        # デバッグ: suggestionsの中身を確認
+        print("=== Debug Suggestions ===")
+        for suggestion in suggestions:
+            print(f"資格: {suggestion['qualification']['name']}, スコア: {suggestion['score']}")
+        print("========================")
+
+        # suggestionsをrecommendationsとしてテンプレートに渡す
+        return render(request, "1_user/自己分析/result_analysis.html", {"recommendations": suggestions})
+
+    return render(request, "1_user/自己分析/self_analysis.html")
 
 
 
 
+def self_analysis(request):
+    # カテゴリごとに資格をグループ化
+    qualifications_by_category = {}
+    for qualification in QUALIFICATIONS:
+        for category in qualification["categories"]:
+            if category not in qualifications_by_category:
+                qualifications_by_category[category] = []
+            qualifications_by_category[category].append(qualification)
+
+    return render(request, "1_user/自己分析/self_analysis.html", {
+        "qualifications_by_category": qualifications_by_category
+    })
+
+def result_analysis(request):
+    user_data = request.POST
+    strengths = user_data.getlist('strengths', [])
+    weaknesses = user_data.getlist('weaknesses', [])
+    achieved_certifications = user_data.getlist('achieved_certifications', [])
+    target_certification = user_data.get('target_certification', None)
+
+    # 推薦資格リストの生成
+    recommendations = []
+    for qualification in QUALIFICATIONS:
+        match_score = calculate_match_score(
+            qualification, strengths, weaknesses, achieved_certifications, target_certification
+        )
+        # もしスコアがEでない場合のみリストに追加
+        if match_score != "E":
+            recommendations.append((qualification, match_score))
+
+    # 推薦資格が空の場合でもデフォルトデータを設定
+    if not recommendations:
+        recommendations = [
+            ({"name": "デフォルト資格", "categories": ["一般技術"], "level": 1}, "E")
+        ]
+
+    # デバッグ用出力（必要であればコメントアウト可能）
+    print("=== Debug Information ===")
+    print("Strengths:", strengths)
+    print("Weaknesses:", weaknesses)
+    print("Achieved Certifications:", achieved_certifications)
+    print("Target Certification:", target_certification)
+    print("Generated Recommendations:", recommendations)
+    print("=========================")
+
+    return render(request, "1_user/自己分析/result_analysis.html", {"recommendations": recommendations})
 
 
 
+def calculate_match_score(qualification, strengths, weaknesses, achieved_certifications, target_certification):
+    score = 0
 
+    # 強みと資格カテゴリの一致
+    for strength in strengths:
+        if strength in qualification["categories"]:
+            score += 2
 
+    # 弱みが資格カテゴリに含まれる場合は減点
+    for weakness in weaknesses:
+        if weakness in qualification["categories"]:
+            score -= 1
 
+    # 取得済み資格に一致する場合は減点
+    if qualification["name"] in achieved_certifications:
+        score -= 2
 
+    # ターゲット資格に近い場合は加点
+    if target_certification and target_certification in qualification["categories"]:
+        score += 1
 
-
-
-
-
-
+    # スコアに基づいてマッチ度を決定
+    if score >= 3:
+        return "A"
+    elif score == 2:
+        return "B"
+    elif score == 1:
+        return "C"
+    elif score == 0:
+        return "D"
+    else:
+        return "E"
 
 #-------------------------------------------------------------------------管理者サイド--------------------------------------------------------------------------------------------
 from django.shortcuts import render, redirect

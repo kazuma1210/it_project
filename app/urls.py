@@ -20,8 +20,6 @@ urlpatterns = [
 
     # その他のビュー
     path('mypage/', views.mypage, name='mypage'),
-    path('self_analysis/', views.self_analysis, name='self_analysis'),
-    path('result_analysis/', views.result_analysis, name='result_analysis'),
     path('community_thread/', views.community_thread, name='community_thread'),
     path('save_profile/', views.save_profile, name='save_profile'),
 
@@ -53,6 +51,15 @@ urlpatterns = [
         name='report_thread'
     ),
     path('api/get_user_report_data/', views.get_user_report_data, name='get_user_report_data'),
+
+
+
+
+
+
+    path('self_analysis/', views.self_analysis, name='self_analysis'),
+    path('result_analysis/', views.result_analysis, name='result_analysis'),
+    path('submit_analysis/', views.suggest_qualifications, name='submit_analysis'),
 
 
 #------------------------------管理者サイド------------------------------------
